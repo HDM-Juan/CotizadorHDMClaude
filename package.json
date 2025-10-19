@@ -1,0 +1,35 @@
+{
+  "name": "sistema-cotizacion-profesional",
+  "version": "3.0.0",
+  "description": "Sistema completo de cotización de refacciones móviles - Hospital del Móvil",
+  "main": "backend-apis-oficiales.js",
+  "scripts": {
+    "start": "node backend-apis-oficiales.js",
+    "dev": "nodemon backend-apis-oficiales.js",
+    "test": "echo \"Tests not implemented yet\" && exit 0"
+  },
+  "keywords": [
+    "cotizacion",
+    "refacciones",
+    "moviles",
+    "api",
+    "amazon",
+    "ebay",
+    "mercadolibre"
+  ],
+  "author": "Hospital del Móvil",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "axios": "^1.6.0",
+    "dotenv": "^16.3.1",
+    "amazon-paapi": "^1.0.3"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}
