@@ -33,6 +33,19 @@ const EBAY_CONFIG = {
     endpoint: 'https://svcs.ebay.com/services/search/FindingService/v1'
 };
 
+const MERCADOLIBRE_CONFIG = {
+    clientId: process.env.ML_CLIENT_ID,
+    clientSecret: process.env.ML_CLIENT_SECRET,
+    accessToken: process.env.ML_ACCESS_TOKEN,
+    apiUrl: 'https://api.mercadolibre.com',
+    site: 'MLM' // México
+};
+
+const ALIEXPRESS_CONFIG = {
+    appKey: process.env.ALIEXPRESS_APP_KEY,
+    appSecret: process.env.ALIEXPRESS_APP_SECRET
+};
+
 // ============================================
 // RUTAS PRINCIPALES
 // ============================================
@@ -228,41 +241,107 @@ async function searchEbay(query) {
 }
 
 // MercadoLibre API
-async function searchMercadoLibre(query) {
+async function searchMercadoLibre(query, limit = 10) {
     try {
         console.log('🛒 Buscando en MercadoLibre:', query);
 
-        const response = await axios.get('https://api.mercadolibre.com/sites/MLM/search', {
-            params: {
-                q: query,
-                limit: 10
-            },
-            timeout: 5000
-        });
+        // Búsqueda principal
+        const searchUrl = `${MERCADOLIBRE_CONFIG.apiUrl}/sites/${MERCADOLIBRE_CONFIG.site}/search`;
 
-        if (response.data.results) {
-            return response.data.results.map(item => ({
-                platform: 'MercadoLibre',
-                title: item.title,
-                price: item.price,
-                currency: item.currency_id,
-                shipping: item.shipping && item.shipping.free_shipping ? 0 : 100,
-                taxes: item.price * 0.16,
-                totalPrice: item.price + (item.shipping && item.shipping.free_shipping ? 0 : 100) + (item.price * 0.16),
-                url: item.permalink,
-                imageUrl: item.thumbnail,
-                condition: item.condition,
-                seller: item.seller ? item.seller.nickname : 'MercadoLibre Seller',
-                rating: 4.2,
-                deliveryDays: 5
-            }));
+        const headers = {
+            'User-Agent': 'CotizadorHospitalDelMovil/3.0',
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        };
+
+        if (MERCADOLIBRE_CONFIG.accessToken) {
+            headers['Authorization'] = `Bearer ${MERCADOLIBRE_CONFIG.accessToken}`;
         }
 
-        return [];
+        const response = await axios.get(searchUrl, {
+            params: {
+                q: query,
+                limit: limit,
+                offset: 0
+            },
+            headers: headers,
+            timeout: 10000
+        });
+
+        if (!response.data.results || response.data.results.length === 0) {
+            console.warn('⚠️ MercadoLibre: No se encontraron resultados');
+            return [];
+        }
+
+        console.log(`✅ MercadoLibre: ${response.data.results.length} resultados encontrados`);
+
+        // Mapear resultados con información mejorada
+        const results = await Promise.all(response.data.results.map(async (item) => {
+            try {
+                // Calcular costos de envío estimados
+                const shippingCost = item.shipping?.free_shipping ? 0 :
+                                    item.shipping?.logistic_type === 'fulfillment' ? 0 : 150;
+
+                // Calcular IVA (16% en México)
+                const taxes = item.price * 0.16;
+
+                // Calcular total
+                const totalPrice = item.price + shippingCost + taxes;
+
+                // Estimar días de entrega
+                let deliveryDays = 7; // Default
+                if (item.shipping?.free_shipping) deliveryDays = 3;
+                if (item.shipping?.logistic_type === 'fulfillment') deliveryDays = 2;
+                if (item.shipping?.tags && item.shipping.tags.includes('same_day')) deliveryDays = 1;
+
+                // Obtener calificación del vendedor si está disponible
+                let sellerRating = 4.0;
+                if (item.seller?.seller_reputation?.transactions?.total > 0) {
+                    const reputation = item.seller.seller_reputation;
+                    sellerRating = reputation.transactions.completed ?
+                        (reputation.transactions.completed / reputation.transactions.total) * 5 : 4.0;
+                }
+
+                return {
+                    platform: 'MercadoLibre',
+                    title: item.title,
+                    price: parseFloat(item.price.toFixed(2)),
+                    currency: item.currency_id,
+                    shipping: parseFloat(shippingCost.toFixed(2)),
+                    taxes: parseFloat(taxes.toFixed(2)),
+                    totalPrice: parseFloat(totalPrice.toFixed(2)),
+                    url: item.permalink,
+                    imageUrl: item.thumbnail?.replace('-I.jpg', '-O.jpg') || item.thumbnail, // Mejor calidad
+                    condition: item.condition === 'new' ? 'Nuevo' :
+                              item.condition === 'used' ? 'Usado' : 'Reacondicionado',
+                    seller: item.seller?.nickname || 'Vendedor ML',
+                    rating: parseFloat(sellerRating.toFixed(1)),
+                    deliveryDays: deliveryDays,
+                    soldQuantity: item.sold_quantity || 0,
+                    availableQuantity: item.available_quantity || 0,
+                    warranty: item.warranty || 'Sin garantía especificada',
+                    freeShipping: item.shipping?.free_shipping || false,
+                    officialStore: item.official_store_id ? true : false
+                };
+            } catch (itemError) {
+                console.error('Error procesando item de MercadoLibre:', itemError.message);
+                return null;
+            }
+        }));
+
+        // Filtrar resultados nulos
+        return results.filter(r => r !== null);
 
     } catch (error) {
-        console.error('Error en MercadoLibre:', error.message);
-        return generateMockResults('MercadoLibre', 5);
+        console.error('❌ Error en MercadoLibre:', error.message);
+
+        // Si no hay credenciales configuradas, mostrar advertencia
+        if (error.response?.status === 401) {
+            console.warn('⚠️ Token de MercadoLibre expirado o inválido');
+        }
+
+        // Retornar array vacío en lugar de datos simulados para APIs reales
+        return [];
     }
 }
 
@@ -285,41 +364,74 @@ async function searchAliExpress(query) {
 // Búsqueda de dispositivos completos
 async function searchDevices(query, condition) {
     try {
-        // Buscar en MercadoLibre como fuente principal
-        const mlQuery = condition === 'new' ? `${query} nuevo` : `${query} usado`;
-        
-        const response = await axios.get('https://api.mercadolibre.com/sites/MLM/search', {
-            params: {
-                q: mlQuery,
-                category: condition === 'new' ? 'MLM1051' : 'MLM1747', // Categorías de celulares
-                limit: 10
-            },
-            timeout: 5000
-        });
+        console.log(`📱 Buscando dispositivos ${condition}:`, query);
 
-        if (response.data.results) {
-            return response.data.results.map(item => ({
-                title: item.title,
-                price: item.price,
-                currency: item.currency_id,
-                url: item.permalink,
-                imageUrl: item.thumbnail,
-                condition: condition,
-                seller: item.seller ? item.seller.nickname : 'Seller'
-            }));
+        // Construir query específico para dispositivos
+        const mlQuery = condition === 'new' ? `${query} nuevo` : `${query} usado excelente estado`;
+
+        const searchUrl = `${MERCADOLIBRE_CONFIG.apiUrl}/sites/${MERCADOLIBRE_CONFIG.site}/search`;
+
+        const headers = {
+            'User-Agent': 'CotizadorHospitalDelMovil/3.0',
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        };
+
+        if (MERCADOLIBRE_CONFIG.accessToken) {
+            headers['Authorization'] = `Bearer ${MERCADOLIBRE_CONFIG.accessToken}`;
         }
 
-        return [];
+        const response = await axios.get(searchUrl, {
+            params: {
+                q: mlQuery,
+                category: 'MLM1051', // Categoría de celulares y smartphones
+                condition: condition === 'new' ? 'new' : 'used',
+                limit: 10,
+                sort: 'price_asc' // Ordenar por precio ascendente
+            },
+            headers: headers,
+            timeout: 10000
+        });
+
+        if (!response.data.results || response.data.results.length === 0) {
+            console.warn(`⚠️ No se encontraron dispositivos ${condition}`);
+            return [];
+        }
+
+        console.log(`✅ Encontrados ${response.data.results.length} dispositivos ${condition}`);
+
+        return response.data.results.map(item => {
+            const shippingCost = item.shipping?.free_shipping ? 0 : 150;
+            const taxes = item.price * 0.16;
+            const totalPrice = item.price + shippingCost + taxes;
+
+            let deliveryDays = condition === 'new' ? 5 : 7;
+            if (item.shipping?.free_shipping) deliveryDays = 3;
+            if (item.shipping?.logistic_type === 'fulfillment') deliveryDays = 2;
+
+            return {
+                platform: 'MercadoLibre',
+                title: item.title,
+                price: parseFloat(item.price.toFixed(2)),
+                currency: item.currency_id,
+                shipping: parseFloat(shippingCost.toFixed(2)),
+                taxes: parseFloat(taxes.toFixed(2)),
+                totalPrice: parseFloat(totalPrice.toFixed(2)),
+                url: item.permalink,
+                imageUrl: item.thumbnail?.replace('-I.jpg', '-O.jpg') || item.thumbnail,
+                condition: condition === 'new' ? 'Nuevo' : 'Usado',
+                seller: item.seller?.nickname || 'Vendedor ML',
+                rating: 4.0,
+                deliveryDays: deliveryDays,
+                soldQuantity: item.sold_quantity || 0,
+                availableQuantity: item.available_quantity || 0,
+                freeShipping: item.shipping?.free_shipping || false
+            };
+        });
 
     } catch (error) {
-        console.error(`Error buscando dispositivos ${condition}:`, error.message);
-        
-        // Generar datos simulados de respaldo
-        const basePrice = condition === 'new' ? 5000 : 3000;
-        return Array(8).fill(null).map(() => ({
-            price: basePrice + (Math.random() * basePrice * 0.5),
-            condition: condition
-        }));
+        console.error(`❌ Error buscando dispositivos ${condition}:`, error.message);
+        return [];
     }
 }
 
@@ -380,11 +492,16 @@ app.listen(PORT, () => {
    POST /api/search              - Buscar refacciones
    POST /api/search-devices      - Buscar dispositivos
 
-⚙️  Configuración:
-   Amazon API: ${AMAZON_CONFIG.accessKey ? '✅' : '❌'} Configurado
-   eBay API:   ${EBAY_CONFIG.appId ? '✅' : '❌'} Configurado
-   
-💡 Consejo: Configura tus credenciales en el archivo .env
+⚙️  Configuración de APIs:
+   Amazon API:       ${AMAZON_CONFIG.accessKey ? '✅' : '❌'} ${AMAZON_CONFIG.accessKey ? 'Configurado' : 'No configurado'}
+   eBay API:         ${EBAY_CONFIG.appId ? '✅' : '❌'} ${EBAY_CONFIG.appId ? 'Configurado' : 'No configurado'}
+   MercadoLibre API: ✅ Activo (sin autenticación)
+   AliExpress API:   ${ALIEXPRESS_CONFIG.appKey ? '✅' : '❌'} ${ALIEXPRESS_CONFIG.appKey ? 'Configurado' : 'No configurado'}
+
+💡 Consejo:
+   - MercadoLibre funciona sin credenciales (búsqueda pública)
+   - Para más resultados, configura credenciales en .env
+   - Consulta GUIA-CONFIGURACION-APIS.md para más información
 
 🚀 Sistema listo para recibir solicitudes...
     `);

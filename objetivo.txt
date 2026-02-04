@@ -1,0 +1,723 @@
+( Sin Enviar , Enviado , Aceptado , Rechazado
+Cotizador de Refacciones para Móvil
+Objetivo: 
+Desarrollar una aplicación para buscar precios de piezas de dispositivos móviles (celulares, laptops, smartwatches) y el costo de dispositivos completos (usados en excelentes condiciones o nuevos) en plataformas de comercio electrónico como Amazon.com.mx, MercadoLibre.com.mx, AliExpress.com y eBay.com. La aplicación deberá analizar los costos para que el usuario pueda generar sus propias cotizaciones y darles seguimiento.
+Herramientas
+Appsheet: El usuario determinará los parámetros para la búsqueda en un formulario de appsheet, el cual guardará los datos en Google Sheet
+Google Sheet , hoja de cálculo donde se guardarán los datos en los que se basará la búsqueda, las cotizaciones presentadas, y la base de cotizaciones en las que se basó el usuario. Además deberá contar con hoja de datos de acceso por usuarios, permisos, y Panel de Administrador
+API ya sea a plataformas de webscraping o directo de las plataformas de comercio electrónico, lo que sea más eficiente en términos de desglose de información, confiabilidad de los datos y costos
+Appscript, API de Google Sheet, API de Appsheet en caso de requerirse
+Github para alojar los archivos y hacer modificaciones en el futuro
+Lenguaje: HTML , CSS, Javascript, react, node etc
+Estilos
+La App tendrá dos productos:
+El Cotizador, parte principal de la app que tendrá casi todas las acciones fundamentales, que tendrá el  buscador para comunicarse por medio de API a las plataformas de búsqueda en base a los datos registrados en Google Sheets por el usuario.
+ Tendrá tres vistas principales:
+Vista Principal: Análisis y gestión de  datos, Elaboración de cotizaciones. 
+Gestionar los datos y presentarlos  en tabla con colores, gráfica de plott, líneas, cálculo de indicadores para tarjetas de refacción , dispositivos completos y usados
+Formulario para generar el subproducto que son las opciones de cotización en base a los resultados presentados}
+Botones de acción para compartir o exportar el subproducto o cotización individual con datos que llenó el usuario en el formulario para elaborar cotizaciones:
+Guardar
+Borrar y volver a empezar
+Sortear y Filtrar , en la tabla de hallazgos
+Contraer , Expandir la tabla de hallazgos para que el usuario pueda esconderla o verla según lo que requiera
+Botón de + para realizar una nueva variación de la cotización a exportar
+Exportar en PDF (para exportar cotizaciones)
+Exportar en JPG (para exportar cotizaciones)
+Exportar en HTML (para exportar cotizaciones)
+Compartir (cotizaciones, en el caso de que se visualice en un dispositivo móvil)
+Cotizaciones, productos de la App que son los documentos individuales de la cotización que realizó el usuario. Los datos que llenó el usuario permanecerán NO Editables para los clientes. Las opciones de exportación, por medio de botón de acción son:
+PDF
+JPG
+HTML con Javascript: Este último es más complejo ya que contendrá acciones por medio de botón para que el cliente pueda dar seguimiento a su cotización:
+Llamada por teléfono
+Envío de Whatsapp: con los datos de la cotización: (Folio, pieza, modelo, precio y fecha de entrega)
+Email
+Google Maps a Hospital del Móvil
+Iconos de Redes
+Compartir
+Guardar
+Zoom in Zoom out
+Las cotizaciones dependen de un formulario a llenar por parte del usuario que contendrá
+
+Tabla de Cotizaciones realizadas, en donde el usuario dueño de la cotización podrá ingresar para completar datos de los resultados de esa su cotización. Cada cotización deberá podrá abrirse en una vista de 
+Detalle de Cotización Individual en donde el usuario podrá detallar:
+Cuándo fue enviada una cotización
+Si fue aceptada o no
+Si tuvo ajustes posteriores al envío o no
+Razones de rechazo o aceptación
+Notas (que el usuario que quiera hacer)
+Volver a exportar la cotización enviada (sin modificarla)
+Panel de Administración . El administrador podrá:
+Autorizar nuevos usuarios
+Cambiar título , subtítulo , logo de la app 
+Cambiar título , subtítulo , logo del formulario de cotización
+Cambiar título , subtítulo, logo de las cotizaciones a exportar
+Establecer correo electrónico, teléfono, whatsapp de las cotizaciones a exportar, las cuales pueden ser:
+Fijas e igual para todas
+Distintas, una por usuario, establecida por el administrador
+Libre para ser asignada por el usuario
+Establecer si la cotización a exportar contendrá el nombre del usuario, se dejará a decisión del usuario, o no contendrá el dato.
+Establecer si la leyenda de vigencia que tendrá cada cotización a exportar será fija (establecida por el administrador) o libre que sea asignada por el usuario.
+Establecer alguna otra nota legal fija en todas las cotizaciones en caso de requerirla
+Eliminar algún icono y acción de comunicación que traigan las cotizaciones exportadas en HTML con Javascript
+Cotizador
+Producto Principal: Tenemos la vista principal del Cotizador , de uso para el usuario , quien es un miembro del staff del Hospital del Móvil. 
+Encabezado estará en rojo,
+Título   Cotizador Refacciones para Móvil 
+Subtítulo Hospital del Móvil
+
+#B22222 → #8B1A1A
+Gradiente corporativo
+
+Logo : https://i.imgur.com/DnV7x36.png   dentro de un círculo blanco
+Footer Completo con datos de contacto e íconos de redes , Google Maps, llamada, email, whatsapp, reseña google en fondo negro #000000
+
+Header Corporativo Delgado
+<div class="header"> <img src="https://i.imgur.com/cqRWu7U.png" alt="Hospital del Móvil"> <h1> Hospital del Móvil</h1> <p class="subtitle">Cotizador de Refacciones para Móvil</p> <div class="progress-bar"> <div class="progress-fill" id="progressBar"></div> </div> </div>
+⚡ CSS Requerido para Header
+Background: linear-gradient(135deg, #B22222 0%, #8B1A1A 100%)
+Logo: 60px x 60px, border-radius: 50%, lado izquierdo
+Título: 18px, text-shadow, lado derecho del logo
+Subtítulo: 12px, opacity: 0.9, debajo del título
+Barra de progreso: 3px altura, bottom: 0
+Acciones Medulares de la App
+Tomar Datos que ingrese el usuario para cotizar la pieza , dispositivo completo usado en excelentes condiciones , nuevo.
+Búsqueda en plataformas de comercio electrónico y en histórico de 8 hasta meses
+Presentación de los hallazgos en tabla , gráfica de plott y líneas , tarjetas de indicadores
+Presentar un Formulario Generar Cotizaciones para que el usuario cree sus propias modalidades de cotización en base a los hallazgos como subproducto de la App 
+Exportar o Compartir Cotizaciones en formatos html con script, jpg, pdf
+Guardar Cotizaciones enviadas, hallazgos utilizados para seguimiento
+1. Tomar Datos
+Appsheet tendrá la acción, a través de un botón, de abrir una URL externa en donde se podrán agregar los parámetros de búsqueda, o el ID de la búsqueda con el que se pueda obtener los datos de la fila, lo que resulte más fácil.
+El Google Sheet en donde se registran los datos que se tomarán para la cotización es  
+https://docs.google.com/spreadsheets/d/1PFBCQqju5ZQFZz1WwRNSNmjSG9_9_2XVBwNcSPUS-SI/edit?gid=0#gid=0 
+La nueva fila será llenada a través de un formulario en appsheet. 
+El usuario llenará un formulario en appsheet que traerá los datos de consulta y que quedarán registrados en un Google Sheet, el cual contendrá los siguientes encabezados de columna: 
+Pestaña: Búsqueda
+ID_Cotizador
+Timestamp
+Usuario
+Dispositivo
+Marca
+Modelo
+Color
+Variante1
+Variante2
+Pieza
+Fecha Registro
+Estado
+Notas
+Key
+Timestamp
+userid email
+enum
+Text
+text
+text
+text
+text
+text
+Fecha
+text
+Long text
+
+
+
+
+
+
+Celular
+Tablet
+Smartwatch
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+2. Búsqueda de Cotizaciones en Plataformas
+Disparador : URL pública con parámetros accionada por appsheet al caer un nuevo registro (una nueva solicitud de cotización, o el último registro del google sheet, pestaña Búsqueda
+La App deberá recoger los datos de la fila del Google Sheet, preferentemente de parámetros codificados en una URL para la realización de la búsqueda. Se recibirán datos de Dispositivo , Marca , Modelo , Color , Variante 1 , Variante 2, Pieza para que se busque:
+Cotización de la Pieza o Refacción con los variantes indicados para el Modelo y Marca de Dispositivo indicado
+Cotización del Dispositivo completo Usado en excelente estado (con fines de referencia en el análisis comparativo).
+Cotización del Dispositivo completo Nuevo (para fines de referencia en el análisis comparativo).
+          La búsqueda se hará en las plataformas: 
+Amazon.com.mx (asignado el color azul)
+eBay.com (asignado color blanco)
+Mercadolibre.com.mx (asignado color amarillo)
+Aliexpress.com (asigando color rojo)
+
+Se buscará cotización de las piezas en las variantes, solicitadas (opcional), para la marca y modelo registrados para ser presentados en los hallazgos
+Se buscará para fines comparativos el costo total (precio de compra + costo de envío + impuestos aplicables de venta o importación si aplican) de dispositivos usados pero en excelentes condiciones, sin necesidad de registrarlos, para hacer los cálculos de precio mínimo, promedio, máximo.
+Se buscará para fines comparativos, el costo total de dispositivos nuevos, sin necesidad de registrarlos. Se tomarán como referencia, el precio mínimo, promedio y máximo
+3. Presentación de los Hallazgos:
+Tarjetas Comparativas de Indicadores
+Tarjeta Blanca: Refacciones: 
+Opción más Económica (Plataforma, costo total , tiempo entrega)
+Opción más Rápida (Plataforma , costo total , tiempo entrega)
+Costo mínimo, primer cuartil, promedio, tercer cuartil, máximo 
+Tarjeta Verde Dispositivos Usados: Con el resumen o indicadores de los hallazgos en cotizaciones de dispositivos completos usados pero en excelente estado. Los datos a presentar son:
+Precio total mínimo
+Precio total promedio
+Precio total máximo
+Porcentaje que representa el costo promedio total de la pieza contra el promedio del costo total de dispositivos usados en excelente estado.
+Tarjeta Azul Dispositivos Nuevos: Con el resumen o indicadores de los hallazgos en cotizaciones de dispositivos nuevos. Los datos a presentar son:
+Precio total mínimo
+Precio total promedio
+Precio total máximo
+Porcentaje que representa el costo promedio total de la pieza contra el promedio del costo total de dispositivos nuevos
+Gráfica Plott 
+Representando los hallazgos de la búsqueda. 
+Cada punto deberá llevar el color de su plataforma. 
+Se agregarán en forma de cuadrado las cotizaciones anteriores de la misma pieza que haya sido cotizada para el mismo modelo y marca
+Negro representando opciones históricas no aceptadas de cualquier usario
+Verde representando opciones históricas aceptadas, de cualquier usuario
+El Eje X será el tiempo de entrega. 
+Eje Y el precio total (precio de venta + impuestos + costo de envío). 
+Cada punto deberá mostrar una etiqueta con los datos que representa al pasar el cursor encima del punto.
+Línea horizontal punteada azul para el precio mínimo de un dispositivo completo usado
+Línea continua continua azul para el precio promedio de dispositivos completos usados
+Línea continua doble azul para el precio máximo de dispositivo completo usado
+Línea horizontal punteada verde para el precio mínimo de un dispositivo completo nuevo
+Línea continua continua verde para el precio promedio de dispositivos completo nuevo
+Línea continua doble verde para el precio máximo de dispositivo completo nuevo
+Tabla de Datos Hallados:
+ 	Con las siguientes columnas
+Checkbox
+Plataforma en la que se haya encontrado. Cada plataforma tendrá asignada un color: 
+Amazon: Azul
+eBay Blanco
+MercadoLibre: Amarillo
+AliExpress: Rojo
+Precio de Venta 
+Costo de Envío con entrega al código postal 03230 en México
+Impuestos aplicables (IVA, importación, según la plataforma y lo que aplique)
+Tiempo de Entrega
+Evaluación que tiene el vendedor dentro de la plataforma
+Enlace a la URL de la oferta
+La tabla deberá tener en el encabezado botones con acción para 
+Checkbox, para ser o no elegida por el usuario
+Sort ,
+Filtrar
+Contraer - Expandir : Para que el usuario pueda esconder o visualizar la tabla a conveniencia.
+Acción: El usuario elegirá máximo 3 cotizaciones (checkbox) para poder elaborar sus propias cotizaciones. Estas máximo 3 cotizaciones se registrarán en la pestaña Hallazgos
+Pestaña: Hallazgo
+ID Hallazgos
+ID Búsqueda
+Folio Hallazgo
+Plataforma
+Costo Compra
+Costo Entrega
+Impuestos
+Costo Total
+Tiempo Entrega (días)
+Calificación Comprador
+Enlace
+Fecha Registro
+Clave Acceso
+Comentarios Cliente
+Usuario
+key
+REF vinculando a la tabla Búsqueda
+concatenación([Folio Búsqueda],”-H”,consecutivo)
+enum con color
+Precio
+Precio
+Precio
+Precio
+Número
+1 a 5 estrellas
+URL
+Fecha
+
+
+
+
+
+
+
+
+
+
+
+
+Amazon, AliExpress, Mercado Libre, eBay
+
+
+al código postal 03230 de México
+Impuesto de Ventas (si aplica) +, Impuesto de importación (si aplica)
+[Costo Compra] + [Costo Entrega] + [Impuestos]
+
+
+
+
+
+
+hoy()
+
+
+
+
+
+
+
+4. Formulario para Generar Cotizaciones
+Incluir al final un formulario para que el usuario pueda generar varias opciones de cotización (máximo 3) en base al análisis de datos hallados.
+El formulario se presentará en forma de tarjeta embebida dentro de la vista principal de hallazgos de búsqueda para dar facilidad al usuario a que pueda estar revisando las cotizaciones, gráficas y tarjetas de indicadores en lo que va elaborando sus cotizaciones
+
+Encabezado: 
+Título: Generador de Cotizaciones 
+Subtítulo: Pieza , Variante 1, Variante 2, para Marca, Modelo 
+Folio de Búsqueda , guión medio , número (consecutivo) de la versión de cotización a exportar
+Cuerpo: Formulario a Llenar
+	Sección A: Datos para Generar  Cotización Exportable 
+Tipo (De Cotización) 
+Fecha y Folio con Consecutivo (y Usuario, si el administrador agrega la opción)
+	Pieza (la del subtítulo) *No editable
+	Precio a llenar por el Usuario
+	Anticipo: A llenar por el Usuario
+	Tiempo de Entrega: A llenar por el usuario
+	Vigencia : A llenar por el usuario (excepción si el administrador decide dejarlo fijo)
+          	Notas: A llenar por el usuario
+	Legales : A definir por el administrador si es que hay
+	Botones de Acción: Exportar JPG , Exportar PDF , Exportar HTML , “ + “ (hacer 2da versión)
+	Sección B Para uso interno:
+Tipo, Fecha, Folio con Consecutivo, Usuario (no editable)
+Pieza, marca , modelo, variantes (no editable)
+Datos de la Cotización que llenó el usuario (no editable)
+Editable
+Fecha de Envío
+Aceptación (True/False)
+Fecha de Respuesta
+Variación de Cotización (true/false)
+Caso True: Describir la variación
+Notas (Texto Libre)
+
+Pestaña: Cotización
+Formato de la Cotización Exportada:
+Encabezado: Color corporativo, logo corporativo en círculo blanco
+    	Título: Cotización Hospital del Móvil
+	Subtítulo: Pieza Variantes para Marca Modelo
+            Fecha , Folio 
+Cuerpo:
+Tabla donde la primera columna serán los nombres de los valores y la segunda columna los valores, NO EDITABLES:
+Tipo Cotización
+Precio
+Fecha Entrega
+Vigencia
+Notas
+Legales
+Pie: Fondo negro, texto blanco con 
+Hospital del Móvil 🔹Florencia 70 Local “F” (esquina y entrada por calle Liverpool),
+Colonia Juárez, Alcaldía Cuauhtémoc Zona Rosa, CDMX 🔹☎️+52(55)5207-7189 🔹 📧zonarosa@hospitaldelmovil.com.mx 🔹www.hospitaldelmovil.com.mx 🔹🟢+52557883 9360
+Lunes a Viernes de 11:00am a 07:00pm y Sábados de 11:00am a 03:00pm
+Versiones a Elegir para exportar: JPG , PDF , HTML 
+*Nota. La cotización que sea exportada en HTML deberá llevar botones con acción para 
+Compartir
+Llamar por teléfono
+Comunicarse por whatsapp
+Iconos para redes sociales
+Mandar email
+Guardar
+
+
+ID_Cotización
+Fecha_Creacion
+Folio Cotización
+Titulo
+Pieza
+Variante 1
+Variante 2
+Dispositivo
+Marca
+Modelo
+Cotizado_Por
+Precio_MXN
+Dias_Entrega
+Vigencia
+Comentarios
+Notas
+Estado
+Cliente
+Folios_Soporte
+Estatus
+I_Medio Envío
+I_Fecha_Envio
+I_PrecioFinal
+I_Modificaciones
+key
+Fecha
+Concatenación ([Folio Búsqueda],”-V”,consecutivo)
+Texto
+
+
+
+
+
+
+
+
+
+
+
+
+usuario
+Precio
+número
+número
+texto
+
+
+
+
+Texto
+lista
+ENUM
+ENUM
+Fecha
+Precio
+
+
+
+
+
+
+
+
+asignado por e usuario
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+asignado por el usuario
+asignado por el usuario
+asignado por defecto. Administrador puede elegir si es editable o no
+texto libre por el usuario
+
+
+
+
+Definido por el usuario
+valores de máximo 3 folios de Hallazgo
+( Sin Enviar , Enviado , Aceptado , Rechazado)
+Email, Verbal, Whatsapp, Facebook
+
+
+
+
+
+
+
+
+
+
+Estilos para Iconos dentro de Cotización exportada en HTML:
+
+ Botón Flotante de WhatsApp
+Botón flotante con animación de pulso para páginas educativas y contenido promocional.
+Vista previa del botón flotante
+El botón aparece en la esquina superior derecha con animación de pulso
+Desktop (60x60px)
+Mobile (50x50px)
+📋 Código HTML Completo
+<!-- Botón WhatsApp Flotante --> <a href="https://wa.me/525555788393609?text=Hola,%20vi%20la%20información%20sobre%20[TEMA]%20y%20me%20interesa%20obtener%20una%20cotización" class="whatsapp-button" target="_blank" title="Contactar por WhatsApp"> <svg width="30" height="30" viewBox="0 0 24 24" fill="currentColor"> <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.488"/> </svg> </a>
+🎨 Código CSS Completo
+/* Botón WhatsApp flotante - Desktop */ .whatsapp-button { position: fixed; top: 20px; right: 20px; background: #25D366; color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; text-decoration: none; box-shadow: 0 4px 15px rgba(37, 211, 102, 0.4); z-index: 1000; transition: all 0.3s ease; animation: pulse 2s infinite; } .whatsapp-button:hover { transform: scale(1.1); box-shadow: 0 6px 20px rgba(37, 211, 102, 0.6); } /* Animación de pulso */ @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(37, 211, 102, 0); } 100% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0); } } /* Versión responsive para móviles */ @media (max-width: 768px) { .whatsapp-button { width: 50px; height: 50px; top: 15px; right: 15px; } .whatsapp-button svg { width: 25px; height: 25px; } }
+ Iconos de Funcionalidad
+Compartir
+Color: #B22222
+<svg fill="currentColor" viewBox="0 0 24 24" width="20" height="20"> <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/> </svg>
+✅ Mejores Prácticas para Iconos
+Usar SVG vectoriales para escalabilidad perfecta
+Mantener proporciones 20x20px en iconos de contacto
+fill="currentColor" para heredar color del contenedor
+Google Reviews: Usar colores específicos (#4285F4, #34A853, #FBBC05, #EA4335)
+Tooltips informativos en todos los iconos de contacto
+Estados hover consistentes en todos los iconos
+Botón flotante: Solo para páginas educativas/promocionales
+Z-index elevado para elementos flotantes (z-index: 1000)
+⚠️ Nota Importante - Icono Google Reviews
+El icono de Google Reviews utiliza múltiples colores específicos. NO usar fill="currentColor" en este icono. Los colores están definidos directamente en cada path para mantener la identidad visual oficial de Google.
+ Implementación de Iconos de Contacto
+Ejemplo completo de icono con tooltip
+<a href="https://wa.me/525555788393609" target="_blank" class="contact-icon whatsapp"> <svg fill="currentColor" viewBox="0 0 24 24" width="20" height="20"> <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967..."></path> </svg> <div class="tooltip">Consultar por WhatsApp</div> </a>
+Enlaces de contacto oficial
+/* Enlaces exactos a usar */ 
+WhatsApp: https://wa.me/525555788393609
+Teléfono: tel:+525552077189
+Facebook: https://www.facebook.com/hospitaldeImovil
+Email: mailto:zonarosa@hospitaldelmovil.com.mx 
+Google Maps: https://maps.app.goo.gl/iYEGEV122yHTpJ2F8
+Google Reviews: https://g.page/r/CX5yYQy_lq-eEBM/review
+
+
+🔧 Funciones JavaScript Críticas
+checkBusinessHours() para horarios
+saveProgress() y loadProgress()
+shareAssistant() para compartir
+submitFeedback() para evaluaciones
+openWhatsApp(), makeCall(), etc.
+setRating() para estrellas
+
+Responsive y Compatibilidad
+Este documento detalla la implementación de iconos de contacto y funcionalidad, así como el botón flotante de WhatsApp, asegurando consistencia visual y usabilidad
+.I. Iconos de Contacto Principales
+Estos iconos deben ser SVG vectoriales para una escalabilidad perfecta y mantener proporciones de 20x20px. Deben usar fill="currentColor" para heredar el color del contenedor, excepto el icono de Google Reviews. Todos los iconos de contacto deben tener tooltips informativos y estados hover consistentes.
+WhatsApp
+Color: #25D366
+SVG:
+<svg fill="currentColor" viewBox="0 0 24 24" width="20" height="20">
+    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.488"/>
+</svg>
+Teléfono
+Color: #DC3545
+SVG:
+<svg fill="currentColor" viewBox="0 0 24 24" width="20" height="20">
+    <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.02.75-.25 1.02l-2.2 2.2z"/>
+</svg>
+Facebook
+Color: #1877F2
+SVG:
+<svg fill="currentColor" viewBox="0 0 24 24" width="20" height="20">
+    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+</svg>
+Email
+Color: #6c757d
+SVG:
+<svg fill="currentColor" viewBox="0 0 24 24" width="20" height="20">
+    <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+</svg>
+Google Maps
+Color: #34A853
+SVG:
+<svg fill="currentColor" viewBox="0 0 24 24" width="20" height="20">
+    <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+</svg>
+Google Reviews
+Color: Gradiente Google (colores específicos en el SVG)
+SVG: No usar fill="currentColor". Los colores están definidos directamente en cada path para mantener la identidad visual oficial de Google.
+<svg viewBox="0 0 24 24" width="20" height="20">
+    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+</svg>
+II. Botón Flotante de WhatsApp
+Este botón, con animación de pulso, está diseñado exclusivamente para páginas educativas y contenido promocional. Se visualiza en la esquina superior derecha.
+Tamaños:
+Desktop: 60x60px
+Mobile: 50x50px
+Código HTML Completo:
+<a href="https://wa.me/525555788393609?text=Hola,%20vi%20la%20información%20sobre%20[TEMA]%20y%20me%20interesa%20obtener%20una%20cotización" class="whatsapp-button" target="_blank" title="Contactar por WhatsApp">
+    <svg width="30" height="30" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.488"/>
+    </svg>
+</a>
+Código CSS Completo:
+/* Botón WhatsApp flotante - Desktop */
+.whatsapp-button {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: #25D366;
+    color: white;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    box-shadow: 0 4px 15px rgba(37, 211, 102, 0.4);
+    z-index: 1000;
+    transition: all 0.3s ease;
+    animation: pulse 2s infinite;
+}
+.whatsapp-button:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(37, 211, 102, 0.6);
+}
+/* Animación de pulso */
+@keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.7); }
+    70% { box-shadow: 0 0 0 10px rgba(37, 211, 102, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0); }
+}
+/* Versión responsive para móviles */
+@media (max-width: 768px) {
+    .whatsapp-button {
+        width: 50px;
+        height: 50px;
+        top: 15px;
+        right: 15px;
+    }
+    .whatsapp-button svg {
+        width: 25px;
+        height: 25px;
+    }
+}
+III. Iconos de Funcionalidad
+Compartir
+Color: #B22222
+SVG:
+<svg fill="currentColor" viewBox="0 0 24 24" width="20" height="20">
+    <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/>
+</svg>
+Posición y Estilo (Icono Compartir):
+position: absolute; top: 15px; right: 15px
+background: rgba(255,255,255,0.9); border-radius: 50%; 40px x 40px
+Tooltip: "Compartir esta Cotización"
+Acción: navigator.share() con fallback al portapapeles.
+Z-index: 100
+IV. Implementación de Iconos de Contacto y Enlaces
+
+Ejemplo completo de icono con tooltip:
+<a href="https://wa.me/525555788393609" target="_blank" class="contact-icon whatsapp">
+    <svg fill="currentColor" viewBox="0 0 24 24" width="20" height="20">
+        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967..."></path>
+    </svg>
+    <div class="tooltip">Consultar por WhatsApp</div>
+</a>
+Enlaces de contacto oficial:
+WhatsApp: [https://wa.me/525555788393609](https://wa.me/525555788393609)
+Teléfono: tel:+525552077189
+Facebook: [https://www.facebook.com/hospitaldeImovil](https://www.facebook.com/hospitaldeImovil)
+Email: mailto:zonarosa@hospitaldelmovil.com.mx
+Google Maps: [https://maps.app.goo.gl/iYEGEV122yHTpJ2F8](https://maps.app.goo.gl/iYEGEV122yHTpJ2F8)
+Google Reviews: [https://g.page/r/CX5yYQy_lq-eEBM/review](https://g.page/r/CX5yYQy_lq-eEBM/review)
+V. Funciones JavaScript Críticas
+
+Las siguientes funciones JavaScript son esenciales para la interactividad:
+checkBusinessHours() para verificar horarios
+saveProgress() y loadProgress() para gestionar el progreso
+shareAssistant() para compartir contenido
+submitFeedback() para enviar evaluaciones
+openWhatsApp(), makeCall(), etc. para acciones de contacto
+setRating() para el sistema de estrellas
+VI. Responsive y Compatibilidad
+Se deben implementar los siguientes breakpoints obligatorios:
+Desktop: 380px width contenedor
+Tablet (768px): calc(100vw - 100px)
+Móvil (480px): calc(100vw - 40px)
+Footer: Se mantiene visible en todos los breakpoints.
+VII. Explicación de Uso Superior
+Un banner con la siguiente configuración debe ubicarse debajo del header y antes del contenido principal:
+CSS: background: linear-gradient(135deg, #B22222 0%, #8B1A1A 100%)
+Texto obligatorio: "Los íconos laterales están disponibles para contacto directo • Horario: Lunes -Viernes 11:00-19:00, Sábado 11:00-15:00 o déjanos mensaje"
+Estilo del texto: font-size: 0.85em; text-align: center; padding: 8px 20px
+Avances Claude
+✅ SISTEMA DE COTIZACIÓN COMPLETO - IMPLEMENTADO!
+He agregado el sistema completo de creación de cotizaciones en cotizador-completo.html
+📋 Características Implementadas:
+1️⃣ Tarjeta de Cotización
+Header Rojo con:
+🏥 Título: "Hospital del Móvil" (grande y bold)
+📱 Subtítulo: "[Refacción] [Variante] para [Marca] [Modelo]"
+📅 Fecha: Automática (formato DD/MM/AAAA)
+📋 Folio: Vinculado al folio único generado
+Formulario con campos:
+Tipo de Cotización * (Select):
+Refacción Original
+Refacción Compatible
+Refacción Premium
+Servicio de Reparación
+Precio (MXN) * (Number input)
+Tiempo de Entrega * (Text input)
+Ej: "3-5 días hábiles"
+Vigencia * (Text input)
+Ej: "30 días"
+Notas (Textarea)
+Garantía, condiciones, información adicional
+2️⃣ Botones de Exportación
+Ubicados en barra inferior de la tarjeta:
+📄 Exportar HTML (naranja) - ✅ FUNCIONAL
+📕 Exportar PDF (rojo) - Info sobre conversión manual
+🖼️ Exportar JPG (verde) - Info sobre captura de pantalla
+📤 Compartir (azul) - ✅ FUNCIONAL (copia al portapapeles o usa Web Share API)
+3️⃣ Sección "Para Uso Interno"
+Ubicada debajo de las tarjetas de cotización:
+Referencias Base:
+Grid con las primeras 6 opciones encontradas
+Click para seleccionar/deseleccionar
+Máximo 3 referencias simultáneas
+Visual: border rojo y fondo rosa cuando seleccionada
+Muestra: Plataforma, Precio, Días, Vendedor
+Folio Único Identificador:
+Formato: COT-AAAAMMDD-XXX
+Botón "🔄 Generar Folio" para crear uno nuevo
+Se vincula automáticamente a todas las variantes
+4️⃣ Sistema de Variantes
+Botón + Grande (verde, lado derecho):
+Permite crear hasta 4 variantes de la cotización
+Aparece solo en la última variante
+Se desactiva al alcanzar el máximo
+Cada variante muestra:
+Badge "Variante N" (esquina superior derecha, verde)
+Botón "✕ Eliminar" (solo si hay más de 1)
+Mismo formulario completo
+Botones de exportación independientes
+Folio con sufijo: COT-AAAAMMDD-XXX-V2
+🎨 Diseño Visual:
+Colores:
+Header: Degradado rojo (#dc2626 → #991b1b)
+Botón HTML: Naranja (#f97316)
+Botón PDF: Rojo (#dc2626)
+Botón JPG: Verde (#059669)
+Botón Compartir: Azul (#3b82f6)
+Botón +: Verde circular (#10b981)
+Referencias seleccionadas: Border rojo + fondo rosa
+Layout:
+Form en 2 columnas (responsive)
+Notas en ancho completo
+Botones de exportación en fila
+Variantes apiladas verticalmente
+Botón + posicionado absoluto a la derecha
+⚙️ Funcionalidades:
+✅ Generación automática de folio único ✅ Validación de campos obligatorios antes de exportar ✅ Exportación HTML completamente funcional con diseño profesional ✅ Compartir vía Web Share API o copiado al portapapeles ✅ Multi-variante hasta 4 cotizaciones simultáneas ✅ Referencias base seleccionables (máx 3) ✅ Auto-llenado de información del producto buscado ✅ Folio con sufijos para diferenciar variantes
+📄 Ejemplo de HTML Exportado:
+El HTML exportado incluye:
+Header rojo con logo y datos
+Información del producto cotizado
+Todos los campos completados
+Formato profesional listo para imprimir
+Estilos embebidos (funciona sin internet)
+Footer con información de la empresa
+🚀 Cómo Usar:
+Buscar refacciones (como antes)
+Scroll hacia abajo hasta "Crear Cotización"
+Llenar el formulario de la primera variante
+(Opcional) Seleccionar hasta 3 referencias base
+(Opcional) Agregar más variantes con el botón +
+Exportar en HTML o Compartir
+El folio único vincula todas las variantes
+💡 Notas Importantes:
+El folio se genera automáticamente al hacer la búsqueda
+Cada variante tiene su propio folio con sufijo (-V1, -V2, etc.)
+Las referencias seleccionadas son solo para control interno
+El HTML exportado puede convertirse a PDF usando Ctrl+P en el navegador
+La función compartir usa el portapapeles si Web Share API no está disponible

@@ -1346,37 +1346,132 @@
         // FUNCIONES DE BÚSQUEDA
         // ============================================
         async function buscarRefacciones() {
-            const deviceType = document.getElementById('deviceType').value;
-            const brand = document.getElementById('brand').value;
-            const model = document.getElementById('model').value;
-            const partType = document.getElementById('partType').value;
-            const variant = document.getElementById('variant').value;
+    const deviceType = document.getElementById('deviceType').value;
+    const brand = document.getElementById('brand').value;
+    const model = document.getElementById('model').value;
+    const partType = document.getElementById('partType').value;
+    const variant = document.getElementById('variant').value;
 
-            if (!deviceType || !brand || !model || !partType) {
-                mostrarNotificacion('⚠️ Por favor completa todos los campos obligatorios', 'warning');
-                return;
+    if (!deviceType || !brand || !model || !partType) {
+        mostrarNotificacion('⚠️ Por favor completa todos los campos obligatorios', 'warning');
+        return;
+    }
+
+    mostrarSpinner();
+
+    try {
+        // Construir query de búsqueda
+        const queryParts = [brand, model, partType];
+        if (variant) queryParts.push(variant);
+        const query = queryParts.join(' ');
+
+        console.log('🔍 Buscando:', query);
+
+        // LLAMADA DIRECTA A MERCADOLIBRE (sin Apps Script)
+        const url = `https://api.mercadolibre.com/sites/MLM/search?q=${encodeURIComponent(query)}&limit=20`;
+        console.log('📡 URL:', url);
+
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json'
             }
+        });
 
-            mostrarSpinner();
-
-            // Simular búsqueda con datos de ejemplo
-            setTimeout(() => {
-                todosLosResultados = generarResultadosEjemplo(brand, model, partType, variant);
-                resultadosFiltrados = [...todosLosResultados];
-                
-                mostrarResultados();
-                mostrarEstadisticas();
-                mostrarGrafica();
-                ocultarSpinner();
-
-                document.getElementById('statsSection').style.display = 'block';
-                document.getElementById('filtersSection').style.display = 'block';
-                document.getElementById('resultsSection').style.display = 'block';
-                document.getElementById('chartSection').style.display = 'block';
-
-                mostrarNotificacion('✅ Búsqueda completada exitosamente', 'success');
-            }, 1500);
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
         }
+
+        const data = await response.json();
+
+        console.log('📦 Respuesta:', data);
+
+        if (data.results && data.results.length > 0) {
+            // Transformar datos de MercadoLibre al formato de tu app
+            todosLosResultados = data.results.map(item => {
+                const shippingCost = item.shipping?.free_shipping ? 0 : 150;
+                const deliveryDays = item.shipping?.free_shipping ? 3 : 5;
+                
+                // Rating del vendedor
+                let rating = 4.0;
+                let reputation = 'Normal';
+                if (item.seller?.seller_reputation) {
+                    const rep = item.seller.seller_reputation;
+                    if (rep.power_seller_status === 'platinum') reputation = 'Platino ⭐⭐⭐';
+                    else if (rep.power_seller_status === 'gold') reputation = 'Oro ⭐⭐';
+                    else if (rep.power_seller_status === 'silver') reputation = 'Plata ⭐';
+                    
+                    if (rep.transactions?.ratings?.positive) {
+                        rating = (rep.transactions.ratings.positive / 100) * 5;
+                    }
+                }
+
+                return {
+                    id: item.id,
+                    producto: item.title,
+                    plataforma: 'mercadolibre',
+                    condicion: item.condition === 'new' ? 'new' : 'used',
+                    precio: parseFloat(item.price) || 0,
+                    valoracion: rating.toFixed(1),
+                    envio: item.shipping?.free_shipping ? 'Gratis' : `$${shippingCost}`,
+                    tiempoEnvio: `${deliveryDays} días`,
+                    url: item.permalink,
+                    imagen: item.thumbnail || 'https://via.placeholder.com/100x100.png?text=Producto',
+                    vendedor: item.seller?.nickname || 'Vendedor',
+                    stock: item.available_quantity || 1
+                };
+            });
+            
+            resultadosFiltrados = [...todosLosResultados];
+            
+            mostrarResultados();
+            mostrarEstadisticas();
+            mostrarGrafica();
+
+            document.getElementById('statsSection').style.display = 'block';
+            document.getElementById('filtersSection').style.display = 'block';
+            document.getElementById('resultsSection').style.display = 'block';
+            document.getElementById('chartSection').style.display = 'block';
+
+            mostrarNotificacion(`✅ ${todosLosResultados.length} productos encontrados en MercadoLibre`, 'success');
+            
+        } else {
+            mostrarNotificacion('⚠️ No se encontraron productos', 'warning');
+            
+            // Mostrar datos de ejemplo como fallback
+            todosLosResultados = generarResultadosEjemplo(brand, model, partType, variant);
+            resultadosFiltrados = [...todosLosResultados];
+            
+            mostrarResultados();
+            mostrarEstadisticas();
+            mostrarGrafica();
+
+            document.getElementById('statsSection').style.display = 'block';
+            document.getElementById('filtersSection').style.display = 'block';
+            document.getElementById('resultsSection').style.display = 'block';
+            document.getElementById('chartSection').style.display = 'block';
+        }
+
+    } catch (error) {
+        console.error('❌ Error:', error);
+        mostrarNotificacion(`❌ Error: ${error.message}`, 'error');
+        
+        // Fallback a datos de ejemplo
+        todosLosResultados = generarResultadosEjemplo(brand, model, partType, variant);
+        resultadosFiltrados = [...todosLosResultados];
+        
+        mostrarResultados();
+        mostrarEstadisticas();
+        mostrarGrafica();
+
+        document.getElementById('statsSection').style.display = 'block';
+        document.getElementById('filtersSection').style.display = 'block';
+        document.getElementById('resultsSection').style.display = 'block';
+        document.getElementById('chartSection').style.display = 'block';
+    } finally {
+        ocultarSpinner();
+    }
+}
 
         async function buscarDispositivosCompletos() {
             const brand = document.getElementById('brand').value;
@@ -2364,7 +2459,7 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"><\/script>
     <script>
         // Generar código QR
         QRCode.toCanvas(
@@ -2393,7 +2488,7 @@
             };
 
             // Obtener URL de API
-            const apiUrl = localStorage.getItem('sheetsApiUrl') || '${document.getElementById('sheetsApiUrl').value}';
+            const apiUrl = localStorage.getItem('sheetsApiUrl') || '';
 
             if (!apiUrl) {
                 alert('⚠️ No se ha configurado la URL de API. Por favor contacta directamente por WhatsApp o Email.');
@@ -2421,7 +2516,7 @@
                 alert('⚠️ Hubo un problema al enviar tu respuesta. Por favor contacta directamente por WhatsApp o Email.');
             }
         });
-    </script>
+    <\/script>
 </body>
 </html>
 `;

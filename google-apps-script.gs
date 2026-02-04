@@ -7,10 +7,12 @@
 // ============================================
 
 // ⚠️ IMPORTANTE: Reemplaza con tu ID de spreadsheet
-const SPREADSHEET_ID = 'TU_SPREADSHEET_ID_AQUI';
+const SPREADSHEET_ID = '1PFBCQqju5ZQFZz1WwRNSNmjSG9_9_2XVBwNcSPUS-SI';
 
 // Nombres de las hojas
 const SHEETS = {
+  BUSQUEDA: 'Búsqueda',
+  HALLAZGOS: 'Hallazgos',
   COTIZACIONES: 'Cotizaciones',
   REFERENCIAS: 'Referencias Base',
   RESPUESTAS: 'Respuestas Clientes',
@@ -50,7 +52,15 @@ function doPost(e) {
       case 'updateEstado':
         result = actualizarEstado(params.folio, params.estado);
         break;
-        
+
+      case 'getUltimaCotizacion':
+        result = obtenerUltimaCotizacion();
+        break;
+
+      case 'saveBusqueda':
+        result = guardarBusqueda(params.data);
+        break;
+
       default:
         result = {
           success: false,
@@ -606,7 +616,214 @@ function testGuardarCotizacion() {
     vencimiento: '2024-12-31',
     estado: 'Pendiente'
   };
-  
+
   const resultado = guardarCotizacion(dataPrueba);
   Logger.log(resultado);
+}
+
+/**
+ * Crear pestaña Búsqueda con datos de prueba
+ */
+function crearPestanaBusqueda() {
+  try {
+    const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    let sheet = ss.getSheetByName(SHEETS.BUSQUEDA);
+
+    // Crear hoja si no existe
+    if (!sheet) {
+      sheet = ss.insertSheet(SHEETS.BUSQUEDA);
+
+      // Headers
+      sheet.appendRow([
+        'ID_Cotizador',
+        'Timestamp',
+        'Usuario',
+        'Dispositivo',
+        'Marca',
+        'Modelo',
+        'Color',
+        'Variante1',
+        'Variante2',
+        'Pieza',
+        'Fecha Registro',
+        'Estado',
+        'Notas'
+      ]);
+
+      // Formato headers
+      const headerRange = sheet.getRange(1, 1, 1, 13);
+      headerRange.setBackground('#2563eb');
+      headerRange.setFontColor('#ffffff');
+      headerRange.setFontWeight('bold');
+
+      Logger.log('✅ Pestaña Búsqueda creada con encabezados');
+    }
+
+    // Agregar datos de prueba
+    sheet.appendRow([
+      'ID_' + Date.now(),
+      new Date(),
+      'usuario@hospitaldelmovil.com.mx',
+      'Celular',
+      'Apple',
+      'iPhone 13',
+      'Negro',
+      'OLED',
+      'Original',
+      'Pantalla',
+      new Date(),
+      'Pendiente',
+      'Búsqueda urgente para cliente'
+    ]);
+
+    Logger.log('✅ Datos de prueba agregados');
+
+    return {
+      success: true,
+      message: 'Pestaña Búsqueda creada con datos de prueba'
+    };
+
+  } catch (error) {
+    Logger.log('❌ Error creando pestaña Búsqueda: ' + error.toString());
+    return {
+      success: false,
+      message: 'Error: ' + error.toString()
+    };
+  }
+}
+
+// ============================================
+// NUEVAS FUNCIONES PARA BÚSQUEDA AUTOMÁTICA
+// ============================================
+
+/**
+ * Obtiene el último registro de la pestaña Búsqueda
+ */
+function obtenerUltimaBusqueda() {
+  try {
+    const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    const sheet = ss.getSheetByName(SHEETS.BUSQUEDA);
+
+    if (!sheet || sheet.getLastRow() < 2) {
+      return {
+        success: false,
+        message: 'No hay búsquedas registradas'
+      };
+    }
+
+    const lastRow = sheet.getLastRow();
+    const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+    const data = sheet.getRange(lastRow, 1, 1, sheet.getLastColumn()).getValues()[0];
+
+    // Crear objeto con los datos
+    const busqueda = {};
+    headers.forEach((header, index) => {
+      busqueda[header] = data[index];
+    });
+
+    return {
+      success: true,
+      data: {
+        id: busqueda['ID_Cotizador'],
+        timestamp: busqueda['Timestamp'],
+        usuario: busqueda['Usuario'],
+        dispositivo: busqueda['Dispositivo'],
+        marca: busqueda['Marca'],
+        modelo: busqueda['Modelo'],
+        color: busqueda['Color'],
+        variante1: busqueda['Variante1'],
+        variante2: busqueda['Variante2'],
+        pieza: busqueda['Pieza'],
+        fechaRegistro: busqueda['Fecha Registro'],
+        estado: busqueda['Estado'],
+        notas: busqueda['Notas']
+      }
+    };
+
+  } catch (error) {
+    Logger.log('❌ Error obteniendo última búsqueda: ' + error.toString());
+    return {
+      success: false,
+      message: 'Error al obtener última búsqueda: ' + error.toString()
+    };
+  }
+}
+
+// Mantener compatibilidad con función anterior
+function obtenerUltimaCotizacion() {
+  return obtenerUltimaBusqueda();
+}
+
+/**
+ * Guarda los resultados de búsqueda en una nueva hoja
+ */
+function guardarBusqueda(data) {
+  try {
+    const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    const sheetName = 'Búsquedas';
+    let sheet = ss.getSheetByName(sheetName);
+
+    // Crear hoja si no existe
+    if (!sheet) {
+      sheet = ss.insertSheet(sheetName);
+
+      // Headers
+      sheet.appendRow([
+        'Fecha Búsqueda',
+        'Folio Cotización',
+        'Tipo Búsqueda',
+        'Marca',
+        'Modelo',
+        'Refacción',
+        'Plataforma',
+        'Precio Venta',
+        'Costo Envío',
+        'Impuestos',
+        'Costo Total',
+        'Calificación Vendedor',
+        'Tiempo Entrega (días)',
+        'URL'
+      ]);
+
+      // Formato headers
+      const headerRange = sheet.getRange(1, 1, 1, 14);
+      headerRange.setBackground('#f59e0b');
+      headerRange.setFontColor('#ffffff');
+      headerRange.setFontWeight('bold');
+    }
+
+    // Guardar cada resultado
+    data.resultados.forEach(resultado => {
+      sheet.appendRow([
+        new Date(),
+        data.folio,
+        data.tipoBusqueda,
+        data.marca,
+        data.modelo,
+        data.refaccion || '',
+        resultado.plataforma,
+        resultado.precioVenta,
+        resultado.costoEnvio,
+        resultado.impuestos,
+        resultado.costoTotal,
+        resultado.calificacionVendedor,
+        resultado.tiempoEntrega,
+        resultado.url
+      ]);
+    });
+
+    Logger.log(`✅ Guardados ${data.resultados.length} resultados de búsqueda`);
+
+    return {
+      success: true,
+      message: `${data.resultados.length} resultados guardados exitosamente`
+    };
+
+  } catch (error) {
+    Logger.log('❌ Error guardando búsqueda: ' + error.toString());
+    return {
+      success: false,
+      message: 'Error al guardar búsqueda: ' + error.toString()
+    };
+  }
 }

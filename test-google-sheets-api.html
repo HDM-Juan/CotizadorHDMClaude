@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test API Google Sheets - CotizadorClaude</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2563eb;
+        }
+        button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #1d4ed8;
+        }
+        #resultado {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 5px;
+            min-height: 100px;
+        }
+        .success {
+            background: #d1fae5;
+            border: 2px solid #10b981;
+        }
+        .error {
+            background: #fee2e2;
+            border: 2px solid #dc2626;
+        }
+        .loading {
+            background: #fef3c7;
+            border: 2px solid #f59e0b;
+        }
+        pre {
+            background: #f3f4f6;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        .url-display {
+            background: #f3f4f6;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            word-break: break-all;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Test de Conexión - Google Sheets API</h1>
+        <p>Prueba la conexión con tu Google Apps Script</p>
+
+        <div class="url-display">
+            <strong>URL de tu Web App:</strong><br>
+            <span id="displayUrl">https://script.google.com/a/macros/hospitaldelmovil.com.mx/s/AKfycbw6q4GqhJgTXwg1MRZNt7H5Hp_GBPLdk5k4ThVjZOk14LIxTjoaIfnOAB9weexVFzGbiA/exec</span>
+        </div>
+
+        <button onclick="probarConexion()">🔌 Probar Conexión (GET)</button>
+        <button onclick="probarUltimaCotizacion()">📊 Obtener Última Cotización (POST)</button>
+        <button onclick="guardarURL()">💾 Guardar URL en localStorage</button>
+
+        <div id="resultado"></div>
+    </div>
+
+    <script>
+        const API_URL = 'https://script.google.com/a/macros/hospitaldelmovil.com.mx/s/AKfycbw6q4GqhJgTXwg1MRZNt7H5Hp_GBPLdk5k4ThVjZOk14LIxTjoaIfnOAB9weexVFzGbiA/exec';
+
+        function mostrarResultado(html, tipo) {
+            const div = document.getElementById('resultado');
+            div.innerHTML = html;
+            div.className = tipo;
+        }
+
+        function probarConexion() {
+            console.log('🔍 Probando conexión con:', API_URL);
+            mostrarResultado('<h3>⏳ Probando conexión...</h3>', 'loading');
+
+            fetch(API_URL + '?action=test')
+                .then(response => {
+                    console.log('📥 Respuesta recibida:', response);
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('✅ Datos recibidos:', data);
+                    mostrarResultado(
+                        '<h2 style="color: green;">✅ Conexión Exitosa</h2>' +
+                        '<p><strong>Mensaje:</strong> ' + data.message + '</p>' +
+                        '<p><strong>Versión:</strong> ' + data.version + '</p>' +
+                        '<p><strong>Timestamp:</strong> ' + data.timestamp + '</p>' +
+                        '<pre>' + JSON.stringify(data, null, 2) + '</pre>',
+                        'success'
+                    );
+                })
+                .catch(err => {
+                    console.error('❌ Error:', err);
+                    mostrarResultado(
+                        '<h2 style="color: red;">❌ Error de Conexión</h2>' +
+                        '<p><strong>Error:</strong> ' + err.message + '</p>' +
+                        '<p>Verifica que:</p>' +
+                        '<ul>' +
+                        '<li>La URL del Web App sea correcta</li>' +
+                        '<li>El Web App esté implementado y autorizado</li>' +
+                        '<li>Tienes conexión a internet</li>' +
+                        '</ul>' +
+                        '<pre>' + err + '</pre>',
+                        'error'
+                    );
+                });
+        }
+
+        function probarUltimaCotizacion() {
+            console.log('🔍 Obteniendo última cotización...');
+            mostrarResultado('<h3>⏳ Consultando última cotización...</h3>', 'loading');
+
+            fetch(API_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    action: 'getUltimaCotizacion'
+                })
+            })
+                .then(response => {
+                    console.log('📥 Respuesta recibida:', response);
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('✅ Datos recibidos:', data);
+
+                    if (data.success) {
+                        mostrarResultado(
+                            '<h2 style="color: green;">✅ Última Cotización Obtenida</h2>' +
+                            '<p><strong>Folio:</strong> ' + (data.data.folio || 'N/A') + '</p>' +
+                            '<p><strong>Marca:</strong> ' + (data.data.marca || 'N/A') + '</p>' +
+                            '<p><strong>Modelo:</strong> ' + (data.data.modelo || 'N/A') + '</p>' +
+                            '<p><strong>Refacción:</strong> ' + (data.data.refaccion || 'N/A') + '</p>' +
+                            '<p><strong>Cliente:</strong> ' + (data.data.cliente || 'N/A') + '</p>' +
+                            '<pre>' + JSON.stringify(data, null, 2) + '</pre>',
+                            'success'
+                        );
+                    } else {
+                        mostrarResultado(
+                            '<h2 style="color: orange;">⚠️ Sin Cotizaciones</h2>' +
+                            '<p><strong>Mensaje:</strong> ' + data.message + '</p>' +
+                            '<p>Asegúrate de que la pestaña "Cotizaciones" en Google Sheets tenga al menos una fila de datos.</p>' +
+                            '<pre>' + JSON.stringify(data, null, 2) + '</pre>',
+                            'error'
+                        );
+                    }
+                })
+                .catch(err => {
+                    console.error('❌ Error:', err);
+                    mostrarResultado(
+                        '<h2 style="color: red;">❌ Error al Consultar</h2>' +
+                        '<p><strong>Error:</strong> ' + err.message + '</p>' +
+                        '<p>Nota: Si usas mode: "no-cors", no podrás leer la respuesta. Revisa la consola del navegador (F12).</p>' +
+                        '<pre>' + err + '</pre>',
+                        'error'
+                    );
+                });
+        }
+
+        function guardarURL() {
+            localStorage.setItem('sheetsApiUrl', API_URL);
+            mostrarResultado(
+                '<h2 style="color: green;">✅ URL Guardada</h2>' +
+                '<p>La URL ha sido guardada en localStorage.</p>' +
+                '<p><strong>Clave:</strong> sheetsApiUrl</p>' +
+                '<p><strong>Valor:</strong> ' + API_URL + '</p>' +
+                '<p>Ahora puedes usar esta URL en tu sistema de cotización.</p>',
+                'success'
+            );
+            console.log('💾 URL guardada en localStorage:', API_URL);
+        }
+
+        // Verificar si ya hay una URL guardada
+        window.onload = function() {
+            const savedUrl = localStorage.getItem('sheetsApiUrl');
+            if (savedUrl) {
+                console.log('ℹ️ URL encontrada en localStorage:', savedUrl);
+            } else {
+                console.log('ℹ️ No hay URL guardada en localStorage');
+            }
+        };
+    </script>
+</body>
+</html>
