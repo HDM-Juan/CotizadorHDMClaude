@@ -1313,16 +1313,8 @@
         });
 
         function cargarAPIUrlDesdeStorage() {
-            const savedUrl = localStorage.getItem('sheetsApiUrl');
-            if (savedUrl) {
-                document.getElementById('sheetsApiUrl').value = savedUrl;
-            }
+            // Función legacy - ya no se usa (Web App integrado)
         }
-
-        document.getElementById('sheetsApiUrl').addEventListener('change', function() {
-            localStorage.setItem('sheetsApiUrl', this.value);
-            mostrarNotificacion('✅ URL de API guardada correctamente', 'success');
-        });
 
         function cargarParametrosURL() {
             const params = new URLSearchParams(window.location.search);
