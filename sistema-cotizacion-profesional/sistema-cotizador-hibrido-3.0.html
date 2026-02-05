@@ -815,17 +815,19 @@
             <div class="version-badge">💎 VERSIÓN COMPLETA CON COMUNICACIÓN BIDIRECCIONAL</div>
         </div>
 
-        <!-- Configuración de Google Sheets API -->
-        <div class="api-config">
-            <h3>⚙️ Configuración de Google Sheets API</h3>
-            <input 
-                type="text" 
-                id="sheetsApiUrl" 
-                placeholder="Pegar aquí la URL del Google Apps Script Web App"
-                value="">
+        <!-- Carga de Datos desde Google Sheets -->
+        <div class="api-config" style="text-align: center;">
+            <h3 style="justify-content: center;">📊 Cargar Datos desde Google Sheets</h3>
+            <button
+                onclick="cargarUltimaBusqueda()"
+                style="padding: 15px 30px; font-size: 16px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; border-radius: 12px; cursor: pointer; font-weight: 600; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3); transition: all 0.3s ease;"
+                onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(16, 185, 129, 0.4)'"
+                onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(16, 185, 129, 0.3)'">
+                📥 Cargar Última Búsqueda
+            </button>
             <div class="help-text">
-                📝 <strong>Instrucciones:</strong> Implementa el script de Google Apps Script como Web App y pega la URL aquí. 
-                Los datos se guardarán automáticamente en tu Google Sheet configurado.
+                💡 <strong>Tip:</strong> Haz click para cargar automáticamente los datos de tu última búsqueda en Google Sheets.
+                O usa la URL con parámetro ?id=COT-XXX para cargar una búsqueda específica.
             </div>
         </div>
 
@@ -1287,6 +1289,11 @@
 
     <script>
         // ============================================
+        // ============================================
+        // CONFIGURACIÓN WEB APP
+        // ============================================
+        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxKvFWt6Cc4nMIa8CFXYCk08WaH5XOhjNyD7ERtJsjkDfpOV9ZCgjs1jt4BhLRjjqLKMg/exec';
+
         // VARIABLES GLOBALES
         // ============================================
         let todosLosResultados = [];
@@ -1319,7 +1326,13 @@
 
         function cargarParametrosURL() {
             const params = new URLSearchParams(window.location.search);
-            
+
+            // Si hay parámetro 'id', cargar datos desde Web App
+            if (params.get('id')) {
+                setTimeout(() => cargarDesdeWebApp(params.get('id')), 500);
+                return;
+            }
+
             if (params.get('dispositivo')) {
                 document.getElementById('deviceType').value = params.get('dispositivo');
             }
@@ -1339,6 +1352,114 @@
             // Si hay parámetros, buscar automáticamente
             if (params.get('modelo')) {
                 setTimeout(() => buscarRefacciones(), 500);
+            }
+        }
+
+        // ============================================
+        // CARGAR DATOS DESDE WEB APP
+        // ============================================
+        async function cargarDesdeWebApp(idBusqueda) {
+            console.log('📥 Cargando datos desde Web App:', idBusqueda);
+            mostrarSpinner();
+
+            try {
+                const url = `${WEB_APP_URL}?action=getHallazgos&id=${idBusqueda}`;
+                console.log('📡 URL:', url);
+
+                const response = await fetch(url);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+                const data = await response.json();
+                console.log('📦 Datos recibidos:', data);
+
+                if (!data.success) {
+                    throw new Error(data.error || 'Error desconocido');
+                }
+
+                // Procesar datos
+                todosLosResultados = data.piezas || [];
+                dispositivosCompletos = {
+                    nuevos: data.equipos_nuevos || [],
+                    usados: data.equipos_usados || []
+                };
+
+                if (todosLosResultados.length === 0) {
+                    mostrarNotificacion('⚠️ No se encontraron datos para este ID', 'warning');
+                    ocultarSpinner();
+                    return;
+                }
+
+                // Actualizar UI
+                resultadosFiltrados = [...todosLosResultados];
+                actualizarTablaResultados();
+                generarGraficas();
+                calcularIndicadores();
+                mostrarResultados();
+                ocultarSpinner();
+
+                mostrarNotificacion(`✅ Cargados ${todosLosResultados.length} hallazgos para ${idBusqueda}`, 'success');
+
+            } catch (error) {
+                console.error('❌ Error:', error);
+                mostrarNotificacion(`❌ Error al cargar datos: ${error.message}`, 'error');
+                ocultarSpinner();
+            }
+        }
+
+        async function cargarUltimaBusqueda() {
+            console.log('📥 Cargando última búsqueda...');
+            mostrarSpinner();
+
+            try {
+                const url = `${WEB_APP_URL}?action=getUltimaBusqueda`;
+                console.log('📡 URL:', url);
+
+                const response = await fetch(url);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+                const data = await response.json();
+                console.log('📦 Datos recibidos:', data);
+
+                if (!data.success) {
+                    throw new Error(data.error || 'Error desconocido');
+                }
+
+                const busqueda = data.busqueda;
+                const hallazgos = data.hallazgos;
+
+                // Procesar datos
+                todosLosResultados = hallazgos.piezas || [];
+                dispositivosCompletos = {
+                    nuevos: hallazgos.equipos_nuevos || [],
+                    usados: hallazgos.equipos_usados || []
+                };
+
+                if (todosLosResultados.length === 0) {
+                    mostrarNotificacion('⚠️ No hay búsquedas disponibles', 'warning');
+                    ocultarSpinner();
+                    return;
+                }
+
+                // Actualizar UI
+                resultadosFiltrados = [...todosLosResultados];
+                actualizarTablaResultados();
+                generarGraficas();
+                calcularIndicadores();
+                mostrarResultados();
+                ocultarSpinner();
+
+                mostrarNotificacion(`✅ Cargada búsqueda: ${busqueda.id} - ${busqueda.pieza} para ${busqueda.marca} ${busqueda.modelo}`, 'success');
+
+            } catch (error) {
+                console.error('❌ Error:', error);
+                mostrarNotificación(`❌ Error al cargar última búsqueda: ${error.message}`, 'error');
+                ocultarSpinner();
             }
         }
 
