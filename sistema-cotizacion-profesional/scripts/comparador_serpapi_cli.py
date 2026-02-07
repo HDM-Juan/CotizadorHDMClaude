@@ -69,20 +69,9 @@ class ComparadorCLI:
 
         resultado['busquedas_serpapi'] += 4  # 4 plataformas
 
-        # Convertir a dict
+        # Convertir a dict (manejar tanto objetos Cotizacion como dicts del cache)
         resultado['piezas'] = [
-            {
-                'plataforma': c.plataforma,
-                'titulo': c.titulo,
-                'precio': c.precio,
-                'moneda': c.moneda,
-                'url_compra': c.url_compra,
-                'calificacion': c.calificacion,
-                'num_resenas': c.num_resenas,
-                'envio_gratis': c.envio_gratis,
-                'tiempo_entrega': c.tiempo_entrega,
-                'vendedor': c.vendedor
-            }
+            c if isinstance(c, dict) else asdict(c)
             for c in cotizaciones_pieza
         ]
 
@@ -128,8 +117,9 @@ class ComparadorCLI:
         cached = self.cache.obtener(modelo, condicion)
 
         if cached:
-            self.log(f"   💾 Usando caché ({cached['dias_restantes']} días restantes)")
-            return cached['cotizaciones'], 0
+            # cached ya es la lista de cotizaciones directamente
+            self.log(f"   💾 Datos cargados del caché")
+            return cached, 0
 
         # No está en caché, buscar
         self.log("   🔄 No hay caché, buscando...")
@@ -137,20 +127,9 @@ class ComparadorCLI:
         query = f"{modelo} {'nuevo' if condicion == 'nuevo' else 'usado'}"
         cotizaciones = self.scraper.buscar_todas_plataformas(query, 15)
 
-        # Convertir a dict
+        # Convertir a dict (manejar tanto objetos Cotizacion como dicts del cache)
         cotizaciones_dict = [
-            {
-                'plataforma': c.plataforma,
-                'titulo': c.titulo,
-                'precio': c.precio,
-                'moneda': c.moneda,
-                'url_compra': c.url_compra,
-                'calificacion': c.calificacion,
-                'num_resenas': c.num_resenas,
-                'envio_gratis': c.envio_gratis,
-                'tiempo_entrega': c.tiempo_entrega,
-                'vendedor': c.vendedor
-            }
+            c if isinstance(c, dict) else asdict(c)
             for c in cotizaciones
         ]
 
@@ -278,8 +257,8 @@ def main():
         )
 
         if args.output_json:
-            # Output solo JSON (para Node.js)
-            print(json.dumps(resultado, ensure_ascii=False, indent=2))
+            # Output solo JSON (para Node.js) - UNA SOLA LÍNEA para parsing fácil
+            print(json.dumps(resultado, ensure_ascii=False))
         else:
             # Output formateado para humanos
             print("\n" + "="*80)
