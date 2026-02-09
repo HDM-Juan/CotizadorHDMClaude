@@ -41,13 +41,15 @@ class Cotizacion:
     """
     
     # OBLIGATORIOS
-    id_busqueda: str
-    id_cotizacion: str
     plataforma: str
     titulo: str
     precio: float
     moneda: str
     url_compra: str
+
+    # IDs (opcionales con valores por defecto)
+    id_busqueda: Optional[str] = None
+    id_cotizacion: Optional[str] = None
     
     # OPCIONALES - Set None si no disponible
     calificacion: Optional[float] = None

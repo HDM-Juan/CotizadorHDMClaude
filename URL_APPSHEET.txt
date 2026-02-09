@@ -1,0 +1,78 @@
+═══════════════════════════════════════════════════════════════
+URL PARA APPSHEET - ACCIÓN "VER HALLAZGOS"
+═══════════════════════════════════════════════════════════════
+
+📱 CONFIGURACIÓN EN APPSHEET:
+
+1. Ir a tu app en AppSheet
+2. En la vista de "Búsquedas" (tabla)
+3. Agregar nueva acción:
+
+Nombre: Ver Hallazgos 📊
+Condición: [Estado] = "Completo"
+Tipo: App: open a URL
+URL: https://hdm-juan.github.io/CotizadorHDMClaude/sistema-cotizador-hibrido-3.0.html?id=[ID_Cotizador]
+
+═══════════════════════════════════════════════════════════════
+
+📋 INSTRUCCIONES DETALLADAS:
+
+1. En AppSheet, ir a: Behavior → Actions
+2. Click: + New Action
+3. Configurar:
+
+   For a record of this table: Búsqueda
+   Do this: App: open a URL
+
+   URL:
+   https://hdm-juan.github.io/CotizadorHDMClaude/sistema-cotizador-hibrido-3.0.html?id=[ID_Cotizador]
+
+   Only if this condition is true:
+   [Estado] = "Completo"
+
+   Appearance:
+   Display name: Ver Hallazgos 📊
+   Icon: visibility (o el que prefieras)
+
+4. Save
+
+═══════════════════════════════════════════════════════════════
+
+🎨 FORMATO CONDICIONAL (OPCIONAL):
+
+En AppSheet, agregar formato a columna "Estado":
+
+Formato condicional 1:
+  Si: [Estado] = "Pendiente"
+  Color de fondo: #fff3cd (amarillo claro)
+
+Formato condicional 2:
+  Si: [Estado] = "Buscando"
+  Color de fondo: #cfe2ff (azul claro)
+
+Formato condicional 3:
+  Si: [Estado] = "Completo"
+  Color de fondo: #d1e7dd (verde claro)
+
+Formato condicional 4:
+  Si: [Estado] = "Error"
+  Color de fondo: #f8d7da (rojo claro)
+
+═══════════════════════════════════════════════════════════════
+
+✅ RESULTADO FINAL:
+
+El usuario verá en AppSheet:
+
+┌─────────────────────────────────────┐
+│ Búsqueda: COT-20260204-001          │
+│ Pantalla OLED - Samsung S22 Plus    │
+│ Estado: ✅ Completo                 │
+│                                     │
+│ [Ver Hallazgos 📊]                  │
+└─────────────────────────────────────┘
+
+Al hacer click, se abrirá el navegador con los resultados
+visuales, gráficas y opción de generar cotizaciones.
+
+═══════════════════════════════════════════════════════════════

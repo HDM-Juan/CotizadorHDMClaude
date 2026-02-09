@@ -6,7 +6,7 @@
 
 // ⚠️ CONFIGURACIÓN - ACTUALIZAR ESTAS VARIABLES
 const SPREADSHEET_ID = '1PFBCQqju5ZQFZz1WwRNSNmjSG9_9_2XVBwNcSPUS-SI';
-const BACKEND_URL = 'http://localhost:3000'; // Cambiar por tu URL de ngrok o producción
+const BACKEND_URL = 'https://unadmonitory-insupportable-keyla.ngrok-free.dev'; // URL de ngrok
 
 // Nombres de pestañas
 const SHEETS = {
@@ -22,21 +22,22 @@ const ESTADOS = {
   ERROR: 'Error'
 };
 
-// Índices de columnas (0-based)
+// Índices de columnas (0-based) - Ajustado al Sheet real
 const COLS = {
-  ID: 0,
-  TIMESTAMP: 1,
-  USUARIO: 2,
-  DISPOSITIVO: 3,
-  MARCA: 4,
-  MODELO: 5,
-  COLOR: 6,
-  VARIANTE1: 7,
-  VARIANTE2: 8,
-  PIEZA: 9,
-  FECHA: 10,
-  ESTADO: 11,  // ⚠️ AJUSTAR SEGÚN TU SHEET
-  NOTAS: 12
+  ID: 0,          // A: Búsqueda_ID
+  FOLIO: 1,       // B: Folio Busqueda
+  TIMESTAMP: 2,   // C: Timestamp
+  USUARIO: 3,     // D: Usuario
+  DISPOSITIVO: 4, // E: Dispositivo
+  MARCA: 5,       // F: Marca
+  MODELO: 6,      // G: Modelo
+  COLOR: 7,       // H: Color
+  VARIANTE1: 8,   // I: Variante1
+  VARIANTE2: 9,   // J: Variante2
+  PIEZA: 10,      // K: Pieza
+  FECHA: 11,      // L: Fecha Registro
+  NOTAS: 12,      // M: Notas
+  ESTADO: 13      // N: Estatus
 };
 
 // ============================================
@@ -63,7 +64,7 @@ function onEdit(e) {
     Logger.log(`✏️ Edición detectada en fila ${fila}`);
 
     // Leer datos de la fila editada
-    const datos = sheet.getRange(fila, 1, 1, 13).getValues()[0];
+    const datos = sheet.getRange(fila, 1, 1, 14).getValues()[0];
 
     // Verificar datos mínimos
     if (!datos[COLS.MARCA] || !datos[COLS.MODELO] || !datos[COLS.PIEZA]) {
@@ -116,22 +117,28 @@ function procesarBusqueda(sheet, fila, datos) {
     const options = {
       method: 'post',
       contentType: 'application/json',
+      headers: {
+        'ngrok-skip-browser-warning': 'true'
+      },
       payload: JSON.stringify(payload),
       muteHttpExceptions: true
     };
 
-    const response = UrlFetchApp.fetch(BACKEND_URL + '/buscar', options);
+    const response = UrlFetchApp.fetch(BACKEND_URL + '/api/buscar-serpapi', options);
     const code = response.getResponseCode();
     const resultado = JSON.parse(response.getContentText());
 
     if (code === 200) {
+      // Los datos vienen dentro de resultado.data
+      const data = resultado.data || resultado;
+
       Logger.log('✅ Búsqueda exitosa');
-      Logger.log(`   Piezas encontradas: ${resultado.piezas?.length || 0}`);
-      Logger.log(`   Equipos nuevos: ${resultado.equipos_nuevos?.length || 0}`);
-      Logger.log(`   Equipos usados: ${resultado.equipos_usados?.length || 0}`);
+      Logger.log(`   Piezas encontradas: ${data.piezas?.length || 0}`);
+      Logger.log(`   Equipos nuevos: ${data.equipos_nuevos?.length || 0}`);
+      Logger.log(`   Equipos usados: ${data.equipos_usados?.length || 0}`);
 
       // 4. Guardar hallazgos
-      guardarHallazgos(datos[COLS.ID], resultado);
+      guardarHallazgos(datos[COLS.ID], data);
 
       // 5. Actualizar estado a "Completo"
       actualizarEstado(sheet, fila, ESTADOS.COMPLETO);
@@ -346,7 +353,7 @@ function procesarUltimaBusquedaManual() {
       throw new Error('No hay datos para procesar');
     }
 
-    const datos = sheet.getRange(ultimaFila, 1, 1, 13).getValues()[0];
+    const datos = sheet.getRange(ultimaFila, 1, 1, 14).getValues()[0];
 
     Logger.log('📋 Datos de última fila:');
     Logger.log(`   ID: ${datos[COLS.ID]}`);
@@ -380,7 +387,8 @@ function crearPestanaBusqueda() {
 
     // Header
     sheet.appendRow([
-      'ID_Cotizador',
+      'Búsqueda_ID',
+      'Folio Busqueda',
       'Timestamp',
       'Usuario',
       'Dispositivo',
@@ -390,19 +398,19 @@ function crearPestanaBusqueda() {
       'Variante1',
       'Variante2',
       'Pieza',
-      'Fecha_Registro',
-      'Estado',
-      'Notas'
+      'Fecha Registro',
+      'Notas',
+      'Estatus'
     ]);
 
     // Formato header
-    const headerRange = sheet.getRange(1, 1, 1, 13);
+    const headerRange = sheet.getRange(1, 1, 1, 14);
     headerRange.setFontWeight('bold');
     headerRange.setBackground('#4285f4');
     headerRange.setFontColor('#ffffff');
 
     // Auto-resize columnas
-    sheet.autoResizeColumns(1, 13);
+    sheet.autoResizeColumns(1, 14);
 
     Logger.log('✅ Pestaña Búsqueda creada');
 

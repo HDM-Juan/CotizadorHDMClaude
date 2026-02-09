@@ -43,18 +43,22 @@ app.post('/api/buscar-serpapi', async (req, res) => {
         console.log('='.repeat(80));
 
         const {
+            id,
+            id_busqueda,
             dispositivo,
             marca,
             modelo,
             color,
             variante1,
             variante2,
-            pieza,
-            id_busqueda
+            pieza
         } = req.body;
 
+        // Usar 'id' o 'id_busqueda' (el que venga)
+        const busqueda_id = id_busqueda || id || 'COT-' + Date.now();
+
         console.log('📋 Datos recibidos:');
-        console.log(`   ID Búsqueda: ${id_busqueda}`);
+        console.log(`   ID Búsqueda: ${busqueda_id}`);
         console.log(`   Dispositivo: ${dispositivo}`);
         console.log(`   Marca: ${marca}`);
         console.log(`   Modelo: ${modelo}`);
@@ -77,7 +81,7 @@ app.post('/api/buscar-serpapi', async (req, res) => {
         // Ejecutar script Python
         console.log('\n🐍 Ejecutando script Python...');
 
-        const resultado = await ejecutarPython(query_pieza, query_modelo, id_busqueda);
+        const resultado = await ejecutarPython(query_pieza, query_modelo, busqueda_id);
 
         console.log('\n✅ Búsqueda completada exitosamente');
         console.log(`   Total piezas: ${resultado.piezas?.length || 0}`);
@@ -162,7 +166,7 @@ app.post('/api/guardar-hallazgos', async (req, res) => {
 
 function ejecutarPython(query_pieza, query_modelo, id_busqueda) {
     return new Promise((resolve, reject) => {
-        const scriptPath = path.join(SCRIPT_DIR, 'comparador_serpapi_cli.py');
+        const scriptPath = path.join(SCRIPT_DIR, '..', 'scripts', 'comparador_serpapi_cli.py');
 
         // Verificar que el script existe
         if (!fs.existsSync(scriptPath)) {
@@ -180,8 +184,13 @@ function ejecutarPython(query_pieza, query_modelo, id_busqueda) {
 
         console.log(`   Ejecutando: ${PYTHON_PATH} ${args.join(' ')}`);
 
-        // Spawn proceso Python
-        const python = spawn(PYTHON_PATH, args);
+        // Spawn proceso Python con codificación UTF-8
+        const python = spawn(PYTHON_PATH, args, {
+            env: {
+                ...process.env,
+                PYTHONIOENCODING: 'utf-8'
+            }
+        });
 
         let stdout_data = '';
         let stderr_data = '';
@@ -208,11 +217,11 @@ function ejecutarPython(query_pieza, query_modelo, id_busqueda) {
         python.on('close', (code) => {
             if (code === 0) {
                 try {
-                    // Extraer JSON del output (última línea válida)
+                    // Extraer JSON del output
                     const lines = stdout_data.trim().split('\n');
                     let jsonData = null;
 
-                    // Buscar la última línea que sea JSON válido
+                    // Método 1: Buscar línea completa con JSON
                     for (let i = lines.length - 1; i >= 0; i--) {
                         const line = lines[i].trim();
                         if (line.startsWith('{')) {
@@ -221,6 +230,44 @@ function ejecutarPython(query_pieza, query_modelo, id_busqueda) {
                                 break;
                             } catch (e) {
                                 continue;
+                            }
+                        }
+                    }
+
+                    // Método 2: Reconstruir JSON fragmentado
+                    if (!jsonData) {
+                        let jsonLines = [];
+                        let capturing = false;
+
+                        for (const line of lines) {
+                            const trimmed = line.trim();
+
+                            // Detectar inicio de JSON (líneas con "campo": valor)
+                            if (trimmed.includes('"id_busqueda":') || trimmed.includes('"query_pieza":')) {
+                                capturing = true;
+                                jsonLines = ['{'];
+                            }
+
+                            if (capturing) {
+                                // Agregar línea sin prefijos de logging
+                                const cleaned = trimmed.replace(/^\[Python\]\s*/, '');
+                                if (cleaned) {
+                                    jsonLines.push(cleaned);
+                                }
+
+                                // Detectar fin de JSON
+                                if (cleaned === '}') {
+                                    break;
+                                }
+                            }
+                        }
+
+                        if (jsonLines.length > 1) {
+                            const jsonStr = jsonLines.join('\n');
+                            try {
+                                jsonData = JSON.parse(jsonStr);
+                            } catch (e) {
+                                console.log('   ⚠️ Error parseando JSON reconstruido:', e.message);
                             }
                         }
                     }

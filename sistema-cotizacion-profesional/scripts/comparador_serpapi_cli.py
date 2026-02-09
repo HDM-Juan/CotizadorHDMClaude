@@ -67,7 +67,7 @@ class ComparadorCLI:
             limite_por_plataforma=20
         )
 
-        resultado['busquedas_serpapi'] += 4  # 4 plataformas
+        resultado['busquedas_serpapi'] += 3  # MercadoLibre + Google Shopping + eBay
 
         # Convertir a dict (manejar tanto objetos Cotizacion como dicts del cache)
         resultado['piezas'] = [
@@ -136,7 +136,7 @@ class ComparadorCLI:
         # Guardar en caché
         self.cache.guardar(modelo, condicion, cotizaciones_dict)
 
-        return cotizaciones_dict, 4  # 4 búsquedas (4 plataformas)
+        return cotizaciones_dict, 3  # MercadoLibre + Google Shopping + eBay
 
     def _calcular_estadisticas(self, piezas: List[Dict],
                                nuevos: List[Dict],

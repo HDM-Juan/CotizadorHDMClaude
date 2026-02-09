@@ -815,19 +815,17 @@
             <div class="version-badge">💎 VERSIÓN COMPLETA CON COMUNICACIÓN BIDIRECCIONAL</div>
         </div>
 
-        <!-- Carga de Datos desde Google Sheets -->
-        <div class="api-config" style="text-align: center;">
-            <h3 style="justify-content: center;">📊 Cargar Datos desde Google Sheets</h3>
-            <button
-                onclick="cargarUltimaBusqueda()"
-                style="padding: 15px 30px; font-size: 16px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; border-radius: 12px; cursor: pointer; font-weight: 600; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3); transition: all 0.3s ease;"
-                onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(16, 185, 129, 0.4)'"
-                onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(16, 185, 129, 0.3)'">
-                📥 Cargar Última Búsqueda
-            </button>
+        <!-- Configuración de Google Sheets API -->
+        <div class="api-config">
+            <h3>⚙️ Configuración de Google Sheets API</h3>
+            <input 
+                type="text" 
+                id="sheetsApiUrl" 
+                placeholder="Pegar aquí la URL del Google Apps Script Web App"
+                value="">
             <div class="help-text">
-                💡 <strong>Tip:</strong> Haz click para cargar automáticamente los datos de tu última búsqueda en Google Sheets.
-                O usa la URL con parámetro ?id=COT-XXX para cargar una búsqueda específica.
+                📝 <strong>Instrucciones:</strong> Implementa el script de Google Apps Script como Web App y pega la URL aquí. 
+                Los datos se guardarán automáticamente en tu Google Sheet configurado.
             </div>
         </div>
 
@@ -1278,13 +1276,10 @@
                     📄 Exportar HTML
                 </button>
                 <button class="btn btn-warning" onclick="exportarCotizacionPDF()">
-                    Exportar PDF
-                </button>
-                <button class="btn" style="background: #8b5cf6; color: white;" onclick="exportarCotizacionJPG()">
-                    Exportar JPG
+                    📄 Exportar PDF
                 </button>
                 <button class="btn btn-danger" onclick="cerrarModalCotizacion()">
-                    Cancelar
+                    ❌ Cancelar
                 </button>
             </div>
         </div>
@@ -1292,19 +1287,6 @@
 
     <script>
         // ============================================
-        // ============================================
-        // CONFIGURACIÓN WEB APP
-        // ============================================
-        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxKvFWt6Cc4nMIa8CFXYCk08WaH5XOhjNyD7ERtJsjkDfpOV9ZCgjs1jt4BhLRjjqLKMg/exec';
-
-        // CONFIGURACION DE CONTACTO - Actualizar con datos reales
-        const CONTACTO = {
-            whatsapp: '5512345678',        // Numero de WhatsApp (sin +, sin espacios)
-            email: 'contacto@hospitaldelmovil.com',
-            negocio: 'Hospital del Movil',
-            eslogan: 'Especialistas en Reparacion de Dispositivos Moviles'
-        };
-
         // VARIABLES GLOBALES
         // ============================================
         let todosLosResultados = [];
@@ -1324,18 +1306,20 @@
         });
 
         function cargarAPIUrlDesdeStorage() {
-            // URL de API se usa desde WEB_APP_URL (constante)
+            const savedUrl = localStorage.getItem('sheetsApiUrl');
+            if (savedUrl) {
+                document.getElementById('sheetsApiUrl').value = savedUrl;
+            }
         }
+
+        document.getElementById('sheetsApiUrl').addEventListener('change', function() {
+            localStorage.setItem('sheetsApiUrl', this.value);
+            mostrarNotificacion('✅ URL de API guardada correctamente', 'success');
+        });
 
         function cargarParametrosURL() {
             const params = new URLSearchParams(window.location.search);
-
-            // Si hay parámetro 'id', cargar datos desde Web App
-            if (params.get('id')) {
-                setTimeout(() => cargarDesdeWebApp(params.get('id')), 500);
-                return;
-            }
-
+            
             if (params.get('dispositivo')) {
                 document.getElementById('deviceType').value = params.get('dispositivo');
             }
@@ -1355,114 +1339,6 @@
             // Si hay parámetros, buscar automáticamente
             if (params.get('modelo')) {
                 setTimeout(() => buscarRefacciones(), 500);
-            }
-        }
-
-        // ============================================
-        // CARGAR DATOS DESDE WEB APP
-        // ============================================
-        async function cargarDesdeWebApp(idBusqueda) {
-            console.log('📥 Cargando datos desde Web App:', idBusqueda);
-            mostrarSpinner();
-
-            try {
-                const url = `${WEB_APP_URL}?action=getHallazgos&id=${idBusqueda}`;
-                console.log('📡 URL:', url);
-
-                const response = await fetch(url);
-
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}`);
-                }
-
-                const data = await response.json();
-                console.log('📦 Datos recibidos:', data);
-
-                if (!data.success) {
-                    throw new Error(data.error || 'Error desconocido');
-                }
-
-                // Procesar datos
-                todosLosResultados = data.piezas || [];
-                dispositivosCompletos = {
-                    nuevos: data.equipos_nuevos || [],
-                    usados: data.equipos_usados || []
-                };
-
-                if (todosLosResultados.length === 0) {
-                    mostrarNotificacion('⚠️ No se encontraron datos para este ID', 'warning');
-                    ocultarSpinner();
-                    return;
-                }
-
-                // Actualizar UI
-                resultadosFiltrados = [...todosLosResultados];
-                actualizarTablaResultados();
-                generarGraficas();
-                calcularIndicadores();
-                mostrarResultados();
-                ocultarSpinner();
-
-                mostrarNotificacion(`✅ Cargados ${todosLosResultados.length} hallazgos para ${idBusqueda}`, 'success');
-
-            } catch (error) {
-                console.error('❌ Error:', error);
-                mostrarNotificacion(`❌ Error al cargar datos: ${error.message}`, 'error');
-                ocultarSpinner();
-            }
-        }
-
-        async function cargarUltimaBusqueda() {
-            console.log('📥 Cargando última búsqueda...');
-            mostrarSpinner();
-
-            try {
-                const url = `${WEB_APP_URL}?action=getUltimaBusqueda`;
-                console.log('📡 URL:', url);
-
-                const response = await fetch(url);
-
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}`);
-                }
-
-                const data = await response.json();
-                console.log('📦 Datos recibidos:', data);
-
-                if (!data.success) {
-                    throw new Error(data.error || 'Error desconocido');
-                }
-
-                const busqueda = data.busqueda;
-                const hallazgos = data.hallazgos;
-
-                // Procesar datos
-                todosLosResultados = hallazgos.piezas || [];
-                dispositivosCompletos = {
-                    nuevos: hallazgos.equipos_nuevos || [],
-                    usados: hallazgos.equipos_usados || []
-                };
-
-                if (todosLosResultados.length === 0) {
-                    mostrarNotificacion('⚠️ No hay búsquedas disponibles', 'warning');
-                    ocultarSpinner();
-                    return;
-                }
-
-                // Actualizar UI
-                resultadosFiltrados = [...todosLosResultados];
-                actualizarTablaResultados();
-                generarGraficas();
-                calcularIndicadores();
-                mostrarResultados();
-                ocultarSpinner();
-
-                mostrarNotificacion(`✅ Cargada búsqueda: ${busqueda.id} - ${busqueda.pieza} para ${busqueda.marca} ${busqueda.modelo}`, 'success');
-
-            } catch (error) {
-                console.error('❌ Error:', error);
-                mostrarNotificacion(`Error al cargar ultima busqueda: ${error.message}`, 'error');
-                ocultarSpinner();
             }
         }
 
@@ -1719,12 +1595,6 @@
         // ============================================
         // FUNCIONES DE VISUALIZACIÓN
         // ============================================
-
-        // Aliases para compatibilidad con cargarDesdeWebApp/cargarUltimaBusqueda
-        function actualizarTablaResultados() { mostrarResultados(); }
-        function generarGraficas() { mostrarGrafica(); mostrarComparacion(); }
-        function calcularIndicadores() { mostrarEstadisticas(); }
-
         function mostrarResultados() {
             const tbody = document.getElementById('resultsTableBody');
             const emptyState = document.getElementById('emptyState');
@@ -2082,12 +1952,19 @@
         // GUARDAR Y EXPORTAR
         // ============================================
         async function guardarCotizacion() {
+            const apiUrl = document.getElementById('sheetsApiUrl').value;
+            
+            if (!apiUrl) {
+                mostrarNotificacion('⚠️ Configura la URL de Google Sheets API primero', 'warning');
+                return;
+            }
+
             // Recopilar datos de todas las variantes activas
             const cotizaciones = [];
-
+            
             for (let i = 1; i <= 4; i++) {
                 const clientName = document.getElementById(`clientName${i}`).value;
-
+                
                 if (clientName) { // Solo si tiene nombre de cliente
                     cotizaciones.push({
                         folio: generarFolio(),
@@ -2101,7 +1978,7 @@
                         pieza: document.getElementById('partType').value,
                         variante: document.getElementById('variant').value,
                         tipoVariante: document.getElementById(`variantType${i}`).value,
-                        precioVenta: parseFloat(document.getElementById(`salePrice${i}`).value) || 0,
+                        precioVenta: parseFloat(document.getElementById(`salePrice${i}`).value),
                         tiempoEntrega: document.getElementById(`deliveryTime${i}`).value,
                         garantia: document.getElementById(`warranty${i}`).value,
                         notas: document.getElementById(`notes${i}`).value,
@@ -2112,7 +1989,7 @@
             }
 
             if (cotizaciones.length === 0) {
-                mostrarNotificacion('Completa al menos una variante con nombre de cliente', 'warning');
+                mostrarNotificacion('⚠️ Completa al menos una variante con nombre de cliente', 'warning');
                 return;
             }
 
@@ -2120,11 +1997,11 @@
                 mostrarSpinner();
 
                 for (const cotizacion of cotizaciones) {
-                    await fetch(WEB_APP_URL, {
+                    const response = await fetch(apiUrl, {
                         method: 'POST',
                         mode: 'no-cors',
                         headers: {
-                            'Content-Type': 'text/plain'
+                            'Content-Type': 'application/json'
                         },
                         body: JSON.stringify({
                             action: 'saveCotizacion',
@@ -2134,13 +2011,13 @@
                 }
 
                 ocultarSpinner();
-                mostrarNotificacion(`${cotizaciones.length} cotizacion(es) guardada(s) exitosamente`, 'success');
+                mostrarNotificacion(`✅ ${cotizaciones.length} cotización(es) guardada(s) exitosamente`, 'success');
                 cerrarModalCotizacion();
-
+                
             } catch (error) {
                 console.error('Error:', error);
                 ocultarSpinner();
-                mostrarNotificacion('Error al guardar cotizacion', 'error');
+                mostrarNotificacion('❌ Error al guardar. Verifica la configuración de API', 'error');
             }
         }
 
@@ -2505,12 +2382,12 @@
 
             // Sección de comunicación bidireccional
             const urlActual = window.location.href.split('?')[0];
-            const whatsappNumber = CONTACTO.whatsapp;
-            const whatsappMessage = `Hola, vi la cotizacion ${folio} y me interesa`;
+            const whatsappNumber = '5512345678'; // Cambiar por número real
+            const whatsappMessage = `Hola, vi la cotización ${folio} y me interesa`;
             const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(whatsappMessage)}`;
-            const emailSubject = `Respuesta a Cotizacion ${folio}`;
-            const emailBody = `Estimado ${CONTACTO.negocio},\n\nMe pongo en contacto respecto a la cotizacion ${folio}.\n\n`;
-            const emailUrl = `mailto:${CONTACTO.email}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
+            const emailSubject = `Respuesta a Cotización ${folio}`;
+            const emailBody = `Estimado Hospital del Móvil,\n\nMe pongo en contacto respecto a la cotización ${folio}.\n\n`;
+            const emailUrl = `mailto:contacto@hospitaldelmovilcom?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
 
             html += `
         <div class="comunicacion-section">
@@ -2572,9 +2449,9 @@
         </div>
 
         <div class="footer">
-            <h3 style="color: #2563eb; margin-bottom: 10px;">${CONTACTO.negocio}</h3>
-            <p>${CONTACTO.eslogan}</p>
-            <p>WhatsApp: ${whatsappNumber} | Email: ${CONTACTO.email}</p>
+            <h3 style="color: #2563eb; margin-bottom: 10px;">Hospital del Móvil</h3>
+            <p>🏥 Especialistas en Reparación de Dispositivos Móviles</p>
+            <p>📱 WhatsApp: ${whatsappNumber} | 📧 Email: contacto@hospitaldelmovil.com</p>
             <p style="margin-top: 15px; font-size: 12px;">
                 Esta cotización tiene una validez de 7 días a partir de la fecha de emisión.<br>
                 Los precios están sujetos a disponibilidad y pueden variar sin previo aviso.
@@ -2610,12 +2487,20 @@
                 mensaje: document.getElementById('respMensaje').value
             };
 
+            // Obtener URL de API
+            const apiUrl = localStorage.getItem('sheetsApiUrl') || '';
+
+            if (!apiUrl) {
+                alert('⚠️ No se ha configurado la URL de API. Por favor contacta directamente por WhatsApp o Email.');
+                return;
+            }
+
             try {
-                await fetch('${WEB_APP_URL}', {
+                await fetch(apiUrl, {
                     method: 'POST',
                     mode: 'no-cors',
                     headers: {
-                        'Content-Type': 'text/plain'
+                        'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
                         action: 'saveRespuesta',
@@ -2651,121 +2536,8 @@
         }
 
         function exportarCotizacionPDF() {
-            mostrarNotificacion('Usa Ctrl+P para guardar como PDF', 'warning');
+            mostrarNotificacion('ℹ️ Usa Ctrl+P o ⌘+P para guardar como PDF', 'warning');
             setTimeout(() => window.print(), 500);
-        }
-
-        async function exportarCotizacionJPG() {
-            try {
-                mostrarSpinner();
-
-                // Generar el mismo HTML que exportarCotizacionHTML pero renderizarlo en un iframe oculto
-                // y capturarlo con html2canvas
-                const script = document.createElement('script');
-                if (!window.html2canvas) {
-                    script.src = 'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js';
-                    document.head.appendChild(script);
-                    await new Promise(resolve => script.onload = resolve);
-                }
-
-                // Crear contenedor temporal con el contenido de la cotizacion
-                const folio = generarFolio();
-                const variantes = [];
-                for (let i = 1; i <= 4; i++) {
-                    const clientName = document.getElementById(`clientName${i}`).value;
-                    if (clientName) {
-                        variantes.push({
-                            numero: i,
-                            clienteNombre: clientName,
-                            clienteTelefono: document.getElementById(`clientPhone${i}`).value,
-                            tipoVariante: document.getElementById(`variantType${i}`).value,
-                            precioVenta: document.getElementById(`salePrice${i}`).value,
-                            tiempoEntrega: document.getElementById(`deliveryTime${i}`).value,
-                            garantia: document.getElementById(`warranty${i}`).value,
-                            notas: document.getElementById(`notes${i}`).value
-                        });
-                    }
-                }
-
-                const marca = document.getElementById('brand').value || 'N/A';
-                const modelo = document.getElementById('model').value || 'N/A';
-                const pieza = document.getElementById('partType').value || 'N/A';
-                const fecha = new Date().toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' });
-
-                // Crear div temporal para renderizar
-                const container = document.createElement('div');
-                container.style.cssText = 'position:fixed;left:-9999px;top:0;width:800px;background:white;padding:40px;font-family:Arial,sans-serif;';
-
-                let variantesHTML = '';
-                variantes.forEach(v => {
-                    variantesHTML += `
-                        <div style="border:2px solid #e5e7eb;border-radius:12px;padding:20px;margin:15px 0;background:#f9fafb;">
-                            <h4 style="color:#2563eb;margin:0 0 10px;">Opcion ${v.numero}: ${v.tipoVariante || 'Estandar'}</h4>
-                            <p><strong>Cliente:</strong> ${v.clienteNombre}</p>
-                            ${v.clienteTelefono ? `<p><strong>Tel:</strong> ${v.clienteTelefono}</p>` : ''}
-                            <p style="font-size:24px;color:#059669;font-weight:bold;margin:10px 0;">$${parseFloat(v.precioVenta || 0).toLocaleString('es-MX', {minimumFractionDigits:2})}</p>
-                            ${v.tiempoEntrega ? `<p><strong>Entrega:</strong> ${v.tiempoEntrega}</p>` : ''}
-                            ${v.garantia ? `<p><strong>Garantia:</strong> ${v.garantia}</p>` : ''}
-                            ${v.notas ? `<p><strong>Notas:</strong> ${v.notas}</p>` : ''}
-                        </div>`;
-                });
-
-                let refHTML = '';
-                if (resultadosSeleccionados.length > 0) {
-                    refHTML = '<h3 style="color:#1e40af;margin-top:25px;">Referencias de Precio</h3><table style="width:100%;border-collapse:collapse;font-size:13px;">';
-                    refHTML += '<tr style="background:#2563eb;color:white;"><th style="padding:8px;text-align:left;">Producto</th><th style="padding:8px;">Plataforma</th><th style="padding:8px;text-align:right;">Precio</th></tr>';
-                    resultadosSeleccionados.forEach((r, i) => {
-                        const bg = i % 2 === 0 ? '#f9fafb' : '#ffffff';
-                        refHTML += `<tr style="background:${bg};"><td style="padding:8px;">${(r.titulo || r.title || '').substring(0,50)}</td><td style="padding:8px;text-align:center;">${r.plataforma || r.platform || ''}</td><td style="padding:8px;text-align:right;">$${parseFloat(r.precio || r.price || 0).toLocaleString('es-MX', {minimumFractionDigits:2})}</td></tr>`;
-                    });
-                    refHTML += '</table>';
-                }
-
-                container.innerHTML = `
-                    <div style="text-align:center;border-bottom:3px solid #2563eb;padding-bottom:20px;margin-bottom:20px;">
-                        <h1 style="color:#2563eb;margin:0;font-size:28px;">${CONTACTO.negocio}</h1>
-                        <p style="color:#64748b;margin:5px 0;">${CONTACTO.eslogan}</p>
-                    </div>
-                    <div style="display:flex;justify-content:space-between;margin-bottom:20px;">
-                        <div><strong>Folio:</strong> ${folio}</div>
-                        <div><strong>Fecha:</strong> ${fecha}</div>
-                    </div>
-                    <div style="background:#eff6ff;padding:15px;border-radius:8px;margin-bottom:20px;">
-                        <h3 style="margin:0 0 10px;color:#1e40af;">Dispositivo</h3>
-                        <p style="margin:3px 0;"><strong>Marca:</strong> ${marca} | <strong>Modelo:</strong> ${modelo} | <strong>Pieza:</strong> ${pieza}</p>
-                    </div>
-                    ${variantesHTML}
-                    ${refHTML}
-                    <div style="text-align:center;margin-top:30px;padding-top:20px;border-top:2px solid #e5e7eb;color:#64748b;font-size:12px;">
-                        <p><strong>${CONTACTO.negocio}</strong></p>
-                        <p>WhatsApp: ${CONTACTO.whatsapp} | Email: ${CONTACTO.email}</p>
-                        <p>Cotizacion valida por 7 dias. Precios sujetos a disponibilidad.</p>
-                    </div>`;
-
-                document.body.appendChild(container);
-
-                const canvas = await html2canvas(container, {
-                    scale: 2,
-                    useCORS: true,
-                    backgroundColor: '#ffffff'
-                });
-
-                document.body.removeChild(container);
-
-                // Descargar como JPG
-                const link = document.createElement('a');
-                link.download = `Cotizacion_${folio}.jpg`;
-                link.href = canvas.toDataURL('image/jpeg', 0.95);
-                link.click();
-
-                ocultarSpinner();
-                mostrarNotificacion('Cotizacion JPG exportada exitosamente', 'success');
-
-            } catch (error) {
-                console.error('Error exportando JPG:', error);
-                ocultarSpinner();
-                mostrarNotificacion('Error al exportar JPG: ' + error.message, 'error');
-            }
         }
 
         // ============================================
