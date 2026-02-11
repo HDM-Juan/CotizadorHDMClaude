@@ -41,8 +41,64 @@ const COLS = {
 };
 
 // ============================================
+// TRIGGER: onChange
+// Se ejecuta cuando AppSheet inserta filas
+// ============================================
+
+function onChange(e) {
+  try {
+    Logger.log('📥 Trigger onChange ejecutado');
+
+    // Obtener el sheet activo
+    const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    const sheetBusqueda = ss.getSheetByName(SHEETS.BUSQUEDA);
+
+    if (!sheetBusqueda) {
+      Logger.log('⚠️ Pestaña Búsqueda no encontrada');
+      return;
+    }
+
+    // Obtener la última fila con datos
+    const ultimaFila = sheetBusqueda.getLastRow();
+
+    if (ultimaFila < 2) {
+      Logger.log('⚠️ No hay datos para procesar');
+      return;
+    }
+
+    Logger.log(`📋 Procesando última fila: ${ultimaFila}`);
+
+    // Leer datos de la última fila
+    const datos = sheetBusqueda.getRange(ultimaFila, 1, 1, 14).getValues()[0];
+
+    // Verificar datos mínimos
+    if (!datos[COLS.MARCA] || !datos[COLS.MODELO] || !datos[COLS.PIEZA]) {
+      Logger.log('⚠️ Faltan datos requeridos (Marca, Modelo o Pieza)');
+      return;
+    }
+
+    // Verificar estado actual
+    const estadoActual = datos[COLS.ESTADO];
+
+    // Solo procesar si está Pendiente o vacío
+    if (estadoActual && estadoActual !== ESTADOS.PENDIENTE && estadoActual !== '') {
+      Logger.log(`ℹ️ Estado actual: ${estadoActual} - No se procesa`);
+      return;
+    }
+
+    Logger.log(`✅ Iniciando búsqueda para: ${datos[COLS.MARCA]} ${datos[COLS.MODELO]} - ${datos[COLS.PIEZA]}`);
+
+    // Procesar búsqueda
+    procesarBusqueda(sheetBusqueda, ultimaFila, datos);
+
+  } catch (error) {
+    Logger.log('❌ Error en onChange: ' + error.toString());
+  }
+}
+
+// ============================================
 // TRIGGER: onEdit
-// Se ejecuta cuando se edita el sheet
+// Se ejecuta cuando se edita el sheet manualmente
 // ============================================
 
 function onEdit(e) {
