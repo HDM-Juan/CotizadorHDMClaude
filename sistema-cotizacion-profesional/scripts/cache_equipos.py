@@ -11,7 +11,14 @@ from datetime import datetime, timedelta
 from typing import Optional, Dict, List
 
 class CacheEquipos:
-    """Maneja caché de búsquedas de equipos completos"""
+    """
+    Maneja caché de búsquedas de equipos completos
+    
+    OPTIMIZADO: Solo guarda estadísticas calculadas (min, max, promedio, cantidad)
+    en lugar de todas las cotizaciones completas.
+    
+    Esto reduce el tamaño del caché de ~500KB a ~5KB por modelo.
+    """
     
     def __init__(self, cache_dir: str = "C:\\CotizadorClaude\\cache"):
         self.cache_dir = cache_dir
