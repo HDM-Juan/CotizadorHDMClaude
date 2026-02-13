@@ -11,7 +11,7 @@ import os
 sys.path.append(os.path.dirname(__file__))
 
 from serpapi_scraper import SerpAPIScraper
-from cache_equipos import CacheEquipos
+from cache_equipos_sheets import CacheEquiposSheets
 from cotizacion_modelo import Cotizacion
 import json
 import argparse
@@ -25,7 +25,9 @@ class ComparadorCLI:
     def __init__(self, quiet=False):
         self.quiet = quiet
         self.scraper = SerpAPIScraper()
-        self.cache = CacheEquipos()
+        # URL del Web App de Google Apps Script
+        web_app_url = 'https://script.google.com/macros/s/AKfycbyGgAU08S92arJd_ysoT3FfrGUpc7eScCXhLeo6HYLMAGkTcqSJhQqj3iaKbMfF415cHA/exec'
+        self.cache = CacheEquiposSheets(web_app_url)
 
     def log(self, mensaje):
         """Log solo si no está en modo quiet"""
@@ -109,7 +111,7 @@ class ComparadorCLI:
 
         return resultado
 
-    def _buscar_equipo_cacheado(self, modelo: str, condicion: str) -> tuple:
+    def _buscar_equipo_cacheado(self, query_completo: str, condicion: str):
         """
         Busca equipo con sistema de caché
         
@@ -118,8 +120,13 @@ class ComparadorCLI:
         Returns:
             (estadisticas_dict, busquedas_realizadas)
         """
+        # Separar marca y modelo (ej: "Samsung S22 Plus" -> marca="Samsung", modelo="S22 Plus")
+        partes = query_completo.strip().split(None, 1)
+        marca = partes[0] if len(partes) > 0 else query_completo
+        modelo = partes[1] if len(partes) > 1 else ""
+        
         # Intentar obtener del caché
-        cached = self.cache.obtener(modelo, condicion)
+        cached = self.cache.obtener(marca, modelo, condicion)
 
         if cached:
             # cached son las estadísticas calculadas
@@ -130,7 +137,7 @@ class ComparadorCLI:
         # No está en caché, buscar
         self.log("   🔄 No hay caché, buscando...")
 
-        query = f"{modelo} {'nuevo' if condicion == 'nuevo' else 'usado'}"
+        query = f"{query_completo} {'nuevo' if condicion == 'nuevo' else 'usado'}"
         cotizaciones = self.scraper.buscar_todas_plataformas(query, 15)
 
         # Convertir a dict
@@ -143,7 +150,7 @@ class ComparadorCLI:
         estadisticas = self._calcular_estadisticas_equipo(cotizaciones_dict)
 
         # Guardar SOLO estadísticas en caché (no las 15-20 cotizaciones)
-        self.cache.guardar(modelo, condicion, estadisticas)
+        self.cache.guardar(marca, modelo, condicion, estadisticas)
         
         self.log(f"   💾 Guardadas estadísticas en caché (precio promedio: ${estadisticas.get('promedio', 0):.2f})")
 

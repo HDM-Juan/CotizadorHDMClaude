@@ -28,12 +28,13 @@ class CacheEquiposSheets:
         self.web_app_url = web_app_url
         self.duracion_dias = 30
     
-    def obtener(self, modelo: str, condicion: str) -> Optional[Dict]:
+    def obtener(self, marca: str, modelo: str, condicion: str) -> Optional[Dict]:
         """
         Obtiene estadísticas del caché si están disponibles y no han expirado
         
         Args:
-            modelo: Modelo del equipo (ej: "Samsung S22 Plus")
+            marca: Marca del equipo (ej: "Samsung")
+            modelo: Modelo del equipo (ej: "S22 Plus")
             condicion: "nuevo" o "usado"
             
         Returns:
@@ -42,6 +43,7 @@ class CacheEquiposSheets:
         try:
             params = {
                 'action': 'obtenerCache',
+                'marca': marca,
                 'modelo': modelo,
                 'condicion': condicion
             }
@@ -51,11 +53,11 @@ class CacheEquiposSheets:
             if response.status_code == 200:
                 data = response.json()
                 
-                if data.get('success') and data.get('cache'):
-                    print(f"  💾 Cache encontrado para {modelo} ({condicion})")
-                    return data['cache']
+                if data.get('success') and data.get('cached'):
+                    print(f"  💾 Cache encontrado para {marca} {modelo} ({condicion})")
+                    return data['data']
                 else:
-                    print(f"  ⚠️ No hay cache para {modelo} ({condicion})")
+                    print(f"  ⚠️ No hay cache para {marca} {modelo} ({condicion})")
                     return None
             else:
                 print(f"  ❌ Error obteniendo cache: {response.status_code}")
@@ -65,11 +67,12 @@ class CacheEquiposSheets:
             print(f"  ❌ Error de conexión: {str(e)}")
             return None
     
-    def guardar(self, modelo: str, condicion: str, estadisticas: Dict):
+    def guardar(self, marca: str, modelo: str, condicion: str, estadisticas: Dict):
         """
         Guarda estadísticas en el caché de Google Sheets
         
         Args:
+            marca: Marca del equipo
             modelo: Modelo del equipo
             condicion: "nuevo" o "usado"
             estadisticas: Dict con min, max, promedio, cantidad
@@ -77,6 +80,7 @@ class CacheEquiposSheets:
         try:
             payload = {
                 'action': 'guardarCache',
+                'marca': marca,
                 'modelo': modelo,
                 'condicion': condicion,
                 'estadisticas': estadisticas
@@ -91,7 +95,7 @@ class CacheEquiposSheets:
             if response.status_code == 200:
                 data = response.json()
                 if data.get('success'):
-                    print(f"  ✅ Cache guardado: {modelo} ({condicion})")
+                    print(f"  ✅ Cache guardado: {marca} {modelo} ({condicion})")
                 else:
                     print(f"  ⚠️ Error al guardar: {data.get('error', 'Unknown')}")
             else:
@@ -100,11 +104,12 @@ class CacheEquiposSheets:
         except Exception as e:
             print(f"  ❌ Error guardando cache: {str(e)}")
     
-    def invalidar(self, modelo: str, condicion: str):
+    def invalidar(self, marca: str, modelo: str, condicion: str):
         """Invalida (borra) entrada del caché"""
         try:
             params = {
                 'action': 'invalidarCache',
+                'marca': marca,
                 'modelo': modelo,
                 'condicion': condicion
             }
@@ -116,7 +121,7 @@ class CacheEquiposSheets:
             )
             
             if response.status_code == 200:
-                print(f"  🗑️ Cache invalidado: {modelo} ({condicion})")
+                print(f"  🗑️ Cache invalidado: {marca} {modelo} ({condicion})")
             else:
                 print(f"  ❌ Error invalidando cache")
                 
@@ -151,7 +156,7 @@ if __name__ == "__main__":
     cache = CacheEquiposSheets(WEB_APP_URL)
     
     # Test: guardar
-    cache.guardar("Samsung S22 Plus", "nuevo", {
+    cache.guardar("Samsung", "S22 Plus", "nuevo", {
         'minimo': 12000,
         'promedio': 15000,
         'maximo': 18000,
@@ -159,7 +164,7 @@ if __name__ == "__main__":
     })
     
     # Test: recuperar
-    cached = cache.obtener("Samsung S22 Plus", "nuevo")
+    cached = cache.obtener("Samsung", "S22 Plus", "nuevo")
     print(f"\n📊 Datos recuperados: {cached}")
     
     # Test: listar

@@ -27,7 +27,8 @@ function crearPestanaCache() {
     sheet = ss.insertSheet(CACHE_SHEET_NAME);
     
     // Headers
-    sheet.getRange(1, 1, 1, 9).setValues([[
+    sheet.getRange(1, 1, 1, 10).setValues([[
+      'Marca',
       'Modelo',
       'Condicion',
       'Precio_Minimo',
@@ -40,16 +41,16 @@ function crearPestanaCache() {
     ]]);
     
     // Formato header
-    const headerRange = sheet.getRange(1, 1, 1, 9);
+    const headerRange = sheet.getRange(1, 1, 1, 10);
     headerRange.setFontWeight('bold');
     headerRange.setBackground('#34a853');
     headerRange.setFontColor('#ffffff');
     
-    // Fórmula para Dias_Restantes en I2
-    sheet.getRange('I2').setFormulaR1C1('=IF(R[0]C[-2]="","",DAYS(R[0]C[-1],TODAY()))');
+    // Fórmula para Dias_Restantes en J2
+    sheet.getRange('J2').setFormulaR1C1('=IF(R[0]C[-2]="","",DAYS(R[0]C[-1],TODAY()))');
     
     // Auto-resize
-    sheet.autoResizeColumns(1, 9);
+    sheet.autoResizeColumns(1, 10);
     
     // Congelar header
     sheet.setFrozenRows(1);
@@ -65,7 +66,7 @@ function crearPestanaCache() {
 // OBTENER CACHÉ DE EQUIPO
 // ============================================
 
-function obtenerCacheEquipo(modelo, condicion) {
+function obtenerCacheEquipo(marca, modelo, condicion) {
   try {
     const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
     const sheet = ss.getSheetByName(CACHE_SHEET_NAME);
@@ -81,26 +82,27 @@ function obtenerCacheEquipo(modelo, condicion) {
     for (let i = 1; i < data.length; i++) {
       const row = data[i];
       
-      if (row[0].toLowerCase() === modelo.toLowerCase() && 
-          row[1].toLowerCase() === condicion.toLowerCase()) {
+      if (row[0].toLowerCase() === marca.toLowerCase() &&
+          row[1].toLowerCase() === modelo.toLowerCase() && 
+          row[2].toLowerCase() === condicion.toLowerCase()) {
         
-        const fechaExpiracion = new Date(row[7]);
+        const fechaExpiracion = new Date(row[8]);
         const ahora = new Date();
         
         // Verificar si expiró
         if (ahora > fechaExpiracion) {
-          Logger.log(`⏰ Cache expirado para ${modelo} (${condicion})`);
+          Logger.log(`⏰ Cache expirado para ${marca} ${modelo} (${condicion})`);
           return null;
         }
         
         // Retornar estadísticas
         return {
-          minimo: row[2],
-          promedio: row[3],
-          maximo: row[4],
-          cantidad: row[5],
-          fecha_creacion: row[6],
-          fecha_expiracion: row[7]
+          minimo: row[3],
+          promedio: row[4],
+          maximo: row[5],
+          cantidad: row[6],
+          fecha_creacion: row[7],
+          fecha_expiracion: row[8]
         };
       }
     }
@@ -117,7 +119,7 @@ function obtenerCacheEquipo(modelo, condicion) {
 // GUARDAR CACHÉ DE EQUIPO
 // ============================================
 
-function guardarCacheEquipo(modelo, condicion, estadisticas) {
+function guardarCacheEquipo(marca, modelo, condicion, estadisticas) {
   try {
     const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
     let sheet = ss.getSheetByName(CACHE_SHEET_NAME);
@@ -136,14 +138,16 @@ function guardarCacheEquipo(modelo, condicion, estadisticas) {
     
     // Buscar si ya existe
     for (let i = 1; i < data.length; i++) {
-      if (data[i][0].toLowerCase() === modelo.toLowerCase() && 
-          data[i][1].toLowerCase() === condicion.toLowerCase()) {
+      if (data[i][0].toLowerCase() === marca.toLowerCase() &&
+          data[i][1].toLowerCase() === modelo.toLowerCase() && 
+          data[i][2].toLowerCase() === condicion.toLowerCase()) {
         filaExistente = i + 1;
         break;
       }
     }
     
     const nuevaFila = [
+      marca,
       modelo,
       condicion,
       estadisticas.minimo || 0,
@@ -157,17 +161,17 @@ function guardarCacheEquipo(modelo, condicion, estadisticas) {
     
     if (filaExistente > 0) {
       // Actualizar fila existente
-      sheet.getRange(filaExistente, 1, 1, 8).setValues([nuevaFila.slice(0, 8)]);
-      Logger.log(`♻️ Cache actualizado: ${modelo} (${condicion})`);
+      sheet.getRange(filaExistente, 1, 1, 9).setValues([nuevaFila.slice(0, 9)]);
+      Logger.log(`♻️ Cache actualizado: ${marca} ${modelo} (${condicion})`);
     } else {
       // Agregar nueva fila
-      sheet.appendRow(nuevaFila.slice(0, 8));
+      sheet.appendRow(nuevaFila.slice(0, 9));
       
       // Copiar fórmula de Dias_Restantes
       const ultimaFila = sheet.getLastRow();
-      sheet.getRange(ultimaFila, 9).setFormulaR1C1('=IF(R[0]C[-2]="","",DAYS(R[0]C[-1],TODAY()))');
+      sheet.getRange(ultimaFila, 10).setFormulaR1C1('=IF(R[0]C[-2]="","",DAYS(R[0]C[-1],TODAY()))');
       
-      Logger.log(`💾 Cache guardado: ${modelo} (${condicion})`);
+      Logger.log(`💾 Cache guardado: ${marca} ${modelo} (${condicion})`);
     }
     
   } catch (error) {
@@ -192,7 +196,7 @@ function limpiarCacheExpirado() {
     const data = sheet.getDataRange().getValues();
     const ahora = new Date();
     let eliminados = 0;
-    
+    8
     // Recorrer de abajo hacia arriba para no afectar índices
     for (let i = data.length - 1; i > 0; i--) {
       const fechaExpiracion = new Date(data[i][7]);
@@ -219,22 +223,29 @@ function testCache() {
   crearPestanaCache();
   
   // 2. Guardar datos de prueba
-  guardarCacheEquipo('Samsung S22 Plus', 'nuevo', {
+  guardarCacheEquipo('Samsung', 'S22 Plus', 'nuevo', {
     minimo: 12000,
     promedio: 15000,
     maximo: 18000,
     cantidad: 15
   });
   
-  guardarCacheEquipo('Samsung S22 Plus', 'usado', {
+  guardarCacheEquipo('Samsung', 'S22 Plus', 'usado', {
     minimo: 8000,
     promedio: 10000,
     maximo: 12000,
     cantidad: 12
   });
   
+  guardarCacheEquipo('Apple', 'iPhone 13', 'nuevo', {
+    minimo: 18000,
+    promedio: 22000,
+    maximo: 25000,
+    cantidad: 20
+  });
+  
   // 3. Recuperar datos
-  const cached = obtenerCacheEquipo('Samsung S22 Plus', 'nuevo');
+  const cached = obtenerCacheEquipo('Samsung', 'S22 Plus', 'nuevo');
   Logger.log('📊 Datos recuperados:');
   Logger.log(JSON.stringify(cached, null, 2));
 }

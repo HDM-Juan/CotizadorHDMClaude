@@ -6,7 +6,7 @@
 const SPREADSHEET_ID = '1PFBCQqju5ZQFZz1WwRNSNmjSG9_9_2XVBwNcSPUS-SI';
 
 // ============================================
-// WEB APP - Endpoint GET
+// WEB APP - Endpoints GET y POST
 // ============================================
 
 function doGet(e) {
@@ -25,6 +25,43 @@ function doGet(e) {
         break;
       case 'getUltimaBusqueda':
         response = getUltimaBusqueda();
+        break;
+      case 'obtenerCache':
+        response = obtenerCacheAPI(params.marca, params.modelo, params.condicion);
+        break;
+      case 'listarCache':
+        response = listarCacheAPI();
+        break;
+      default:
+        response = { error: 'Acción no válida' };
+    }
+
+    return ContentService
+      .createTextOutput(JSON.stringify(response))
+      .setMimeType(ContentService.MimeType.JSON);
+
+  } catch (error) {
+    return ContentService
+      .createTextOutput(JSON.stringify({
+        error: error.toString()
+      }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+function doPost(e) {
+  try {
+    const params = JSON.parse(e.postData.contents);
+    const action = params.action;
+
+    let response;
+
+    switch(action) {
+      case 'guardarCache':
+        response = guardarCacheAPI(params.marca, params.modelo, params.condicion, params.estadisticas);
+        break;
+      case 'invalidarCache':
+        response = invalidarCacheAPI(params.marca, params.modelo, params.condicion);
         break;
       default:
         response = { error: 'Acción no válida' };
@@ -381,6 +418,101 @@ function saveRespuesta(data) {
       success: false,
       error: error.toString()
     };
+  }
+}
+
+// ============================================
+// API WRAPPERS PARA FUNCIONES DE CACHE
+// ============================================
+
+function obtenerCacheAPI(marca, modelo, condicion) {
+  try {
+    if (!marca || !modelo || !condicion) {
+      return { success: false, error: 'Faltan parámetros: marca, modelo, condicion' };
+    }
+    
+    const cached = obtenerCacheEquipo(marca, modelo, condicion);
+    
+    if (cached) {
+      return { success: true, cached: true, data: cached };
+    } else {
+      return { success: true, cached: false, data: null };
+    }
+  } catch (error) {
+    return { success: false, error: error.toString() };
+  }
+}
+
+function guardarCacheAPI(marca, modelo, condicion, estadisticas) {
+  try {
+    if (!marca || !modelo || !condicion || !estadisticas) {
+      return { success: false, error: 'Faltan parámetros requeridos' };
+    }
+    
+    guardarCacheEquipo(marca, modelo, condicion, estadisticas);
+    return { success: true, message: 'Cache guardado correctamente' };
+  } catch (error) {
+    return { success: false, error: error.toString() };
+  }
+}
+
+function listarCacheAPI() {
+  try {
+    const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    const sheet = ss.getSheetByName('Cache_Equipos');
+    
+    if (!sheet) {
+      return { success: false, error: 'Pestaña Cache_Equipos no existe' };
+    }
+    
+    const data = sheet.getDataRange().getValues();
+    const cache = [];
+    
+    for (let i = 1; i < data.length; i++) {
+      const row = data[i];
+      cache.push({
+        marca: row[0],
+        modelo: row[1],
+        condicion: row[2],
+        precio_minimo: row[3],
+        precio_promedio: row[4],
+        precio_maximo: row[5],
+        cantidad: row[6],
+        fecha_creacion: row[7],
+        fecha_expiracion: row[8],
+        dias_restantes: row[9]
+      });
+    }
+    
+    return { success: true, total: cache.length, cache: cache };
+  } catch (error) {
+    return { success: false, error: error.toString() };
+  }
+}
+
+function invalidarCacheAPI(marca, modelo, condicion) {
+  try {
+    const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    const sheet = ss.getSheetByName('Cache_Equipos');
+    
+    if (!sheet) {
+      return { success: false, error: 'Pestaña Cache_Equipos no existe' };
+    }
+    
+    const data = sheet.getDataRange().getValues();
+    
+    for (let i = 1; i < data.length; i++) {
+      if (data[i][0].toLowerCase() === marca.toLowerCase() &&
+          data[i][1].toLowerCase() === modelo.toLowerCase() &&
+          data[i][2].toLowerCase() === condicion.toLowerCase()) {
+        sheet.deleteRow(i + 1);
+        return { success: true, message: 'Cache invalidado correctamente' };
+      }
+    }
+    
+    return { success: false, error: 'No se encontró entrada en cache' };
+  } catch (error) {
+    return { success: false, error: error.toString() };
   }
 }
 
