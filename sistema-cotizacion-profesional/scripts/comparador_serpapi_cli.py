@@ -26,7 +26,7 @@ class ComparadorCLI:
         self.quiet = quiet
         self.scraper = SerpAPIScraper()
         # URL del Web App de Google Apps Script
-        web_app_url = 'https://script.google.com/macros/s/AKfycbyeC-EodCCQHSvJUc3s3aC3u8eRi59cThM5DTQvvkV90Tlx_g7F5ZdirCx_ZWTFjWJF6A/exec'
+        web_app_url = 'https://script.google.com/macros/s/AKfycbzS6K9c20cKaHzUHOjU9018DxyPOUH1vpQ1HU69xQdPS9vDTWiWh9GGOa8Ro6NvLh1z2Q/exec'
         self.cache = CacheEquiposSheets(web_app_url)
 
     def log(self, mensaje):
