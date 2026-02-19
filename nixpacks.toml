@@ -4,6 +4,5 @@
 [phases.setup]
 nixPkgs = ["python311", "python311Packages.pip"]
 
-[phases.pipInstall]
-dependsOn = ["setup"]
-cmds = ["pip install requests"]
+[phases.install]
+cmds = ["npm install", "pip install requests"]
