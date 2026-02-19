@@ -27,7 +27,7 @@ class ComparadorCLI:
         self.scraper = SerpAPIScraper()
         # URL del Web App de Google Apps Script
         # ⚠️ Debe coincidir con WEB_APP_URL en sistema-cotizador-hibrido-3.0.html
-        web_app_url = 'https://script.google.com/macros/s/AKfycbxKvFWt6Cc4nMIa8CFXYCk08WaH5XOhjNyD7ERtJsjkDfpOV9ZCgjs1jt4BhLRjjqLKMg/exec'
+        web_app_url = 'https://script.google.com/macros/s/AKfycbzmR2q2JLsTOzpuXSV5MQ8PPX6IoEog30n2SiSAil9bMm7uiyPFEyyCfhk31Trwojq2zg/exec'
         self.cache = CacheEquiposSheets(web_app_url)
 
     def log(self, mensaje):
