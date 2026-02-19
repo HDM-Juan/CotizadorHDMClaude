@@ -1,0 +1,7 @@
+[build]
+builder = "nixpacks"
+
+[deploy]
+startCommand = "node sistema-cotizacion-profesional/backend/backend-serpapi-bridge.js"
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 3

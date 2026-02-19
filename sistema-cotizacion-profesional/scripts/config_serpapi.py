@@ -12,15 +12,21 @@ class ConfigSerpAPI:
     """Maneja la configuración de SerpAPI"""
     
     def __init__(self):
-        self.config_file = "C:\\CotizadorClaude\\config\\serpapi_config.json"
+        # Ruta compatible con Linux/Railway y Windows
+        if os.name == 'nt':  # Windows
+            self.config_file = "C:\\CotizadorClaude\\config\\serpapi_config.json"
+        else:  # Linux/Railway
+            self.config_file = os.path.join(os.path.expanduser("~"), ".cotizador", "serpapi_config.json")
         self.api_key = None
         self._cargar_config()
-    
+
     def _cargar_config(self):
         """Carga la API key desde archivo o variable de entorno"""
-        # Crear directorio si no existe
-        os.makedirs(os.path.dirname(self.config_file), exist_ok=True)
-        
+        # Crear directorio si no existe (solo si el dirname no está vacío)
+        dir_path = os.path.dirname(self.config_file)
+        if dir_path:
+            os.makedirs(dir_path, exist_ok=True)
+
         # Intentar cargar desde archivo
         if os.path.exists(self.config_file):
             try:
@@ -44,17 +50,21 @@ class ConfigSerpAPI:
     def configurar_api_key(self, api_key: str):
         """
         Guarda la API key
-        
+
         Args:
             api_key: Tu API key de SerpAPI
         """
         self.api_key = api_key
-        
+
+        dir_path = os.path.dirname(self.config_file)
+        if dir_path:
+            os.makedirs(dir_path, exist_ok=True)
+
         config = {'api_key': api_key}
-        
+
         with open(self.config_file, 'w') as f:
             json.dump(config, f, indent=2)
-        
+
         print(f"✓ API key guardada en: {self.config_file}")
     
     def obtener_api_key(self) -> str:
