@@ -6,7 +6,7 @@
 
 // ⚠️ CONFIGURACIÓN - ACTUALIZAR ESTAS VARIABLES
 const SPREADSHEET_ID = '1PFBCQqju5ZQFZz1WwRNSNmjSG9_9_2XVBwNcSPUS-SI';
-const BACKEND_URL = 'https://unadmonitory-insupportable-keyla.ngrok-free.dev'; // URL de ngrok
+const BACKEND_URL = 'https://cotizadorhdmclaude-production.up.railway.app'; // Railway producción
 
 // Nombres de pestañas
 const SHEETS = {

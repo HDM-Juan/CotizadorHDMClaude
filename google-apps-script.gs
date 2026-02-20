@@ -19,7 +19,7 @@ const SPREADSHEET_ID = '1PFBCQqju5ZQFZz1WwRNSNmjSG9_9_2XVBwNcSPUS-SI';
 // URL del backend Node.js (ngrok, Railway, Render, etc.)
 // Ejemplo ngrok:  'https://xxxx-xxxx.ngrok-free.app'
 // Ejemplo local:  'http://localhost:3000'  (solo para pruebas en mismo entorno)
-const BACKEND_URL = 'REEMPLAZAR_CON_TU_URL_DE_BACKEND';
+const BACKEND_URL = 'https://cotizadorhdmclaude-production.up.railway.app';
 
 const CACHE_SHEET_NAME = 'Cache_Equipos';
 const CACHE_DURACION_DIAS = 30;
