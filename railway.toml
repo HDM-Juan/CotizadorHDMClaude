@@ -1,7 +1,7 @@
 [build]
-builder = "nixpacks"
+builder = "dockerfile"
+dockerfilePath = "Dockerfile"
 
 [deploy]
-startCommand = "node sistema-cotizacion-profesional/backend/backend-serpapi-bridge.js"
 restartPolicyType = "on_failure"
 restartPolicyMaxRetries = 3
