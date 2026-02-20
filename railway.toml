@@ -1,6 +1,7 @@
 [build]
-builder = "dockerfile"
+builder = "DOCKERFILE"
 dockerfilePath = "Dockerfile"
+installCommand = "npm install"
 
 [deploy]
 restartPolicyType = "on_failure"
