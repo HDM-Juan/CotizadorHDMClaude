@@ -436,6 +436,111 @@ async function searchDevices(query, condition) {
 }
 
 // ============================================
+// SERPAPI - Búsqueda para Google Apps Script
+// ============================================
+
+const SERPAPI_KEY = process.env.SERPAPI_KEY;
+const SERPAPI_URL = 'https://serpapi.com/search';
+
+async function buscarConSerpAPI(query, limite = 15) {
+    if (!SERPAPI_KEY) {
+        console.warn('⚠️ SERPAPI_KEY no configurado');
+        return [];
+    }
+    try {
+        const response = await axios.get(SERPAPI_URL, {
+            params: {
+                engine: 'google_shopping',
+                q: query,
+                api_key: SERPAPI_KEY,
+                gl: 'mx',
+                hl: 'es',
+                num: limite
+            },
+            timeout: 30000
+        });
+
+        const items = response.data.shopping_results || [];
+        return items.map(item => {
+            // Parsear precio: "MX$1,299.00" o "$199.00" → número
+            const priceStr = (item.price || '0').replace(/[^0-9.]/g, '');
+            const precio = parseFloat(priceStr) || 0;
+            return {
+                plataforma:     item.source || 'Google Shopping',
+                titulo:         item.title || 'Sin título',
+                precio:         precio,
+                moneda:         'MXN',
+                envio:          item.delivery || 'No especificado',
+                tiempo_entrega: 'N/A',
+                calificacion:   item.rating || 'N/A',
+                url_compra:     item.link || item.product_link || ''
+            };
+        });
+    } catch (error) {
+        console.error('❌ Error en SerpAPI:', error.message);
+        return [];
+    }
+}
+
+// Endpoint llamado por Google Apps Script onChange trigger
+app.post('/api/buscar-serpapi', async (req, res) => {
+    try {
+        console.log('\n' + '='.repeat(60));
+        console.log('📥 BÚSQUEDA SERPAPI');
+
+        const { id, id_busqueda, dispositivo, marca, modelo, color, variante1, variante2, pieza } = req.body;
+        const busqueda_id = id_busqueda || id || 'COT-' + Date.now();
+
+        console.log(`   ID: ${busqueda_id} | Marca: ${marca} | Modelo: ${modelo} | Pieza: ${pieza}`);
+
+        if (!SERPAPI_KEY) {
+            return res.status(500).json({
+                success: false,
+                error: 'SERPAPI_KEY no está configurado en las variables de entorno de Railway'
+            });
+        }
+
+        // Construir queries
+        const queryPieza  = [pieza, variante1, variante2, marca, modelo].filter(Boolean).join(' ').trim();
+        const queryNuevo  = `${marca} ${modelo} nuevo`.trim();
+        const queryUsado  = `${marca} ${modelo} usado`.trim();
+
+        console.log(`   Query pieza:  "${queryPieza}"`);
+        console.log(`   Query nuevo:  "${queryNuevo}"`);
+        console.log(`   Query usado:  "${queryUsado}"`);
+
+        // Buscar en paralelo
+        const [piezas, equiposNuevos, equiposUsados] = await Promise.all([
+            buscarConSerpAPI(queryPieza, 20),
+            buscarConSerpAPI(queryNuevo, 10),
+            buscarConSerpAPI(queryUsado, 10)
+        ]);
+
+        console.log(`✅ Piezas: ${piezas.length} | Nuevos: ${equiposNuevos.length} | Usados: ${equiposUsados.length}`);
+
+        res.json({
+            success: true,
+            message: 'Búsqueda completada exitosamente',
+            data: {
+                id_busqueda:    busqueda_id,
+                piezas:         piezas,
+                equipos_nuevos: equiposNuevos,
+                equipos_usados: equiposUsados
+            },
+            timestamp: new Date().toISOString()
+        });
+
+    } catch (error) {
+        console.error('❌ Error en /api/buscar-serpapi:', error.message);
+        res.status(500).json({
+            success: false,
+            error: error.message,
+            timestamp: new Date().toISOString()
+        });
+    }
+});
+
+// ============================================
 // FUNCIONES AUXILIARES
 // ============================================
 
@@ -491,8 +596,10 @@ app.listen(PORT, () => {
    GET  /health                  - Health check
    POST /api/search              - Buscar refacciones
    POST /api/search-devices      - Buscar dispositivos
+   POST /api/buscar-serpapi      - Búsqueda SerpAPI (Apps Script)
 
 ⚙️  Configuración de APIs:
+   SerpAPI:          ${SERPAPI_KEY ? '✅' : '❌'} ${SERPAPI_KEY ? 'Configurado' : 'No configurado - Agregar SERPAPI_KEY en Railway'}
    Amazon API:       ${AMAZON_CONFIG.accessKey ? '✅' : '❌'} ${AMAZON_CONFIG.accessKey ? 'Configurado' : 'No configurado'}
    eBay API:         ${EBAY_CONFIG.appId ? '✅' : '❌'} ${EBAY_CONFIG.appId ? 'Configurado' : 'No configurado'}
    MercadoLibre API: ✅ Activo (sin autenticación)
