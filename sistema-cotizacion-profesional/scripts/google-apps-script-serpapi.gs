@@ -8,8 +8,7 @@ const SPREADSHEET_ID = '1PFBCQqju5ZQFZz1WwRNSNmjSG9_9_2XVBwNcSPUS-SI';
 
 // URL del backend Node.js
 // ⚠️ CAMBIAR CUANDO DESPLIEGUES EN PRODUCCIÓN
-const BACKEND_URL = 'http://localhost:3000'; // Desarrollo local
-// const BACKEND_URL = 'https://tu-dominio.com'; // Producción
+const BACKEND_URL = 'https://cotizadorhdmclaude-production.up.railway.app'; // Railway producción
 
 // Nombres de las pestañas
 const SHEETS = {

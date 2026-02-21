@@ -1292,7 +1292,7 @@
         // ============================================
         // CONFIGURACIÓN WEB APP
         // ============================================
-        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxKvFWt6Cc4nMIa8CFXYCk08WaH5XOhjNyD7ERtJsjkDfpOV9ZCgjs1jt4BhLRjjqLKMg/exec';
+        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzxso6OKfPQJApY8Fddir2AQcoBU0uciNfe5aFv8GQFoC5BiCFIFkOW-vIHUmk9dqWclw/exec';
 
         // VARIABLES GLOBALES
         // ============================================
@@ -1386,10 +1386,9 @@
 
                 // Actualizar UI
                 resultadosFiltrados = [...todosLosResultados];
-                actualizarTablaResultados();
-                generarGraficas();
-                calcularIndicadores();
                 mostrarResultados();
+                mostrarEstadisticas();
+                mostrarGrafica();
                 ocultarSpinner();
 
                 mostrarNotificacion(`✅ Cargados ${todosLosResultados.length} hallazgos para ${idBusqueda}`, 'success');
@@ -1440,10 +1439,9 @@
 
                 // Actualizar UI
                 resultadosFiltrados = [...todosLosResultados];
-                actualizarTablaResultados();
-                generarGraficas();
-                calcularIndicadores();
                 mostrarResultados();
+                mostrarEstadisticas();
+                mostrarGrafica();
                 ocultarSpinner();
 
                 mostrarNotificacion(`✅ Cargada búsqueda: ${busqueda.id} - ${busqueda.pieza} para ${busqueda.marca} ${busqueda.modelo}`, 'success');

@@ -1,0 +1,8 @@
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile"
+installCommand = "npm install"
+
+[deploy]
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 3

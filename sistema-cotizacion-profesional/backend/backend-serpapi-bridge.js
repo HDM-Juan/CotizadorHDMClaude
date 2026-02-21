@@ -17,7 +17,7 @@ app.use(cors());
 app.use(express.json());
 
 // Configuración
-const PYTHON_PATH = 'python'; // o 'python3' según tu sistema
+const PYTHON_PATH = process.env.PYTHON_PATH || 'python3'; // python3 en Linux/Railway, python en Windows
 const SCRIPT_DIR = __dirname;
 const GOOGLE_SHEETS_ID = process.env.GOOGLE_SHEETS_ID || '1PFBCQqju5ZQFZz1WwRNSNmjSG9_9_2XVBwNcSPUS-SI';
 

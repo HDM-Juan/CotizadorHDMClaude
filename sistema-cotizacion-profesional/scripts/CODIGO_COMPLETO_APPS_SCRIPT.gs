@@ -6,7 +6,7 @@
 
 // ⚠️ CONFIGURACIÓN - ACTUALIZAR ESTAS VARIABLES
 const SPREADSHEET_ID = '1PFBCQqju5ZQFZz1WwRNSNmjSG9_9_2XVBwNcSPUS-SI';
-const BACKEND_URL = 'https://unadmonitory-insupportable-keyla.ngrok-free.dev';
+const BACKEND_URL = 'https://cotizadorhdmclaude-production.up.railway.app';
 const CACHE_SHEET_NAME = 'Cache_Equipos';
 const CACHE_DURACION_DIAS = 30;
 
