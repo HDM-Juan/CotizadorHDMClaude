@@ -1371,11 +1371,29 @@
                     throw new Error(data.error || 'Error desconocido');
                 }
 
+                // Normalizar campos de hallazgos al formato esperado por mostrarResultados()
+                // Google Apps Script retorna: titulo, calificacion, tiempo_entrega, tipo, url
+                // mostrarResultados() espera: producto, valoracion, tiempoEnvio, condicion, url
+                const normalizarHallazgo = (h, idx) => ({
+                    id:          `${h.id_busqueda || idBusqueda}-${idx}`,
+                    producto:    h.titulo || h.title || h.producto || 'Sin título',
+                    plataforma:  (h.plataforma || 'google_shopping').toLowerCase().replace(/[\s\/]+/g, '_'),
+                    condicion:   h.tipo === 'Equipo Nuevo' ? 'new' : 'used',
+                    precio:      parseFloat(h.precio) || 0,
+                    valoracion:  h.calificacion || h.valoracion || 'N/A',
+                    envio:       h.envio || 'No especificado',
+                    tiempoEnvio: h.tiempo_entrega || h.tiempoEnvio || 'N/A',
+                    url:         h.url || h.url_compra || '#',
+                    imagen:      h.imagen || '',
+                    vendedor:    h.vendedor || h.plataforma || 'N/A',
+                    stock:       h.stock || 'N/A'
+                });
+
                 // Procesar datos
-                todosLosResultados = data.piezas || [];
+                todosLosResultados = (data.piezas || []).map(normalizarHallazgo);
                 dispositivosCompletos = {
-                    nuevos: data.equipos_nuevos || [],
-                    usados: data.equipos_usados || []
+                    nuevos: (data.equipos_nuevos || []).map(normalizarHallazgo),
+                    usados: (data.equipos_usados || []).map(normalizarHallazgo)
                 };
 
                 if (todosLosResultados.length === 0) {
@@ -1731,7 +1749,7 @@
                     </td>
                     <td>
                         <div style="display: flex; align-items: center; gap: 10px;">
-                            <img src="${item.imagen}" alt="${item.producto}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px;">
+                            <img src="${item.imagen || ''}" alt="${item.producto}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px; background:#e5e7eb;" onerror="this.style.display='none'">
                             <div>
                                 <strong>${item.producto}</strong>
                                 <div style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">

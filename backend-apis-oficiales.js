@@ -444,25 +444,35 @@ const SERPAPI_URL = 'https://serpapi.com/search';
 
 async function buscarConSerpAPI(query, limite = 15) {
     if (!SERPAPI_KEY) {
-        console.warn('⚠️ SERPAPI_KEY no configurado');
+        console.warn('⚠️ SERPAPI_KEY no configurado en variables de entorno');
         return [];
     }
     try {
-        const response = await axios.get(SERPAPI_URL, {
-            params: {
-                engine: 'google_shopping',
-                q: query,
-                api_key: SERPAPI_KEY,
-                gl: 'mx',
-                hl: 'es',
-                num: limite
-            },
-            timeout: 30000
-        });
+        const params = {
+            engine: 'google_shopping',
+            q: query,
+            api_key: SERPAPI_KEY,
+            hl: 'es',
+            num: limite
+        };
+
+        console.log(`   🔍 SerpAPI query: "${query}"`);
+        const response = await axios.get(SERPAPI_URL, { params, timeout: 30000 });
+
+        // Detectar errores reportados por la propia API (créditos agotados, key inválida, etc.)
+        if (response.data.error) {
+            console.error(`   ❌ SerpAPI error: ${response.data.error}`);
+            return [];
+        }
 
         const items = response.data.shopping_results || [];
+        console.log(`   📦 SerpAPI devolvió ${items.length} resultados para "${query}"`);
+
+        if (items.length === 0 && response.data.search_information) {
+            console.warn(`   ⚠️ Sin resultados. Info: ${JSON.stringify(response.data.search_information)}`);
+        }
+
         return items.map(item => {
-            // Parsear precio: "MX$1,299.00" o "$199.00" → número
             const priceStr = (item.price || '0').replace(/[^0-9.]/g, '');
             const precio = parseFloat(priceStr) || 0;
             return {
@@ -472,12 +482,14 @@ async function buscarConSerpAPI(query, limite = 15) {
                 moneda:         'MXN',
                 envio:          item.delivery || 'No especificado',
                 tiempo_entrega: 'N/A',
-                calificacion:   item.rating || 'N/A',
-                url_compra:     item.link || item.product_link || ''
+                calificacion:   item.rating ? String(item.rating) : 'N/A',
+                url_compra:     item.link || item.product_link || '',
+                imagen:         item.thumbnail || ''
             };
         });
     } catch (error) {
-        console.error('❌ Error en SerpAPI:', error.message);
+        const detail = error.response?.data?.error || error.message;
+        console.error(`   ❌ Error en SerpAPI para "${query}": ${detail}`);
         return [];
     }
 }
