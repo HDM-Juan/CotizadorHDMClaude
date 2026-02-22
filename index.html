@@ -811,9 +811,9 @@
     <div class="container">
         <!-- Header -->
         <div class="header">
-            <h1>🏥 Hospital del Móvil</h1>
+            <h1>Hospital del Móvil</h1>
             <div class="subtitle">Sistema Profesional de Cotización de Refacciones v3.0</div>
-            <div class="version-badge">💎 VERSIÓN COMPLETA CON COMUNICACIÓN BIDIRECCIONAL</div>
+            <div class="version-badge">VERSIÓN COMPLETA CON COMUNICACIÓN BIDIRECCIONAL</div>
         </div>
 
         <!-- Estadísticas -->
@@ -1317,6 +1317,12 @@
                 mostrarResultados();
                 mostrarEstadisticas();
                 mostrarGrafica();
+
+                document.getElementById('statsSection').style.display = 'block';
+                document.getElementById('filtersSection').style.display = 'block';
+                document.getElementById('resultsSection').style.display = 'block';
+                document.getElementById('chartSection').style.display = 'block';
+
                 ocultarSpinner();
 
                 mostrarNotificacion(`✅ Cargados ${todosLosResultados.length} hallazgos para ${idBusqueda}`, 'success');
@@ -1384,6 +1390,12 @@
                 mostrarResultados();
                 mostrarEstadisticas();
                 mostrarGrafica();
+
+                document.getElementById('statsSection').style.display = 'block';
+                document.getElementById('filtersSection').style.display = 'block';
+                document.getElementById('resultsSection').style.display = 'block';
+                document.getElementById('chartSection').style.display = 'block';
+
                 ocultarSpinner();
 
                 mostrarNotificacion(`✅ Cargada búsqueda: ${busqueda.id} - ${busqueda.pieza} para ${busqueda.marca} ${busqueda.modelo}`, 'success');
