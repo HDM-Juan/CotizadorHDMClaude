@@ -9,6 +9,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
     
     <style>
@@ -19,12 +20,12 @@
         }
 
         :root {
-            --primary: #2563eb;
-            --primary-dark: #1d4ed8;
+            --primary: #bf0d23;
+            --primary-dark: #8c0c1c;
             --secondary: #10b981;
             --danger: #dc2626;
             --warning: #f59e0b;
-            --purple: #8b5cf6;
+            --purple: #8c0c1c;
             --background: #f0f4f8;
             --white: #ffffff;
             --text-primary: #1f2937;
@@ -36,7 +37,7 @@
 
         body {
             font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Arial, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #3d0009 0%, #bf0d23 100%);
             min-height: 100vh;
             padding: 20px;
             position: relative;
@@ -236,7 +237,7 @@
         .form-group input:focus {
             outline: none;
             border-color: var(--primary);
-            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+            box-shadow: 0 0 0 4px rgba(191, 13, 35, 0.1);
         }
 
         /* Botones mejorados */
@@ -262,7 +263,7 @@
 
         .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(37, 99, 235, 0.3);
+            box-shadow: 0 10px 25px rgba(191, 13, 35, 0.3);
         }
 
         .btn-success {
@@ -300,17 +301,17 @@
         }
 
         .stat-card {
-            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            background: linear-gradient(135deg, #fff5f6 0%, #ffe4e8 100%);
             border-radius: 16px;
             padding: 25px;
             text-align: center;
-            border: 2px solid #bae6fd;
+            border: 2px solid #fecdd3;
             transition: all 0.3s ease;
         }
 
         .stat-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(37, 99, 235, 0.2);
+            box-shadow: 0 10px 25px rgba(191, 13, 35, 0.2);
         }
 
         .stat-value {
@@ -635,7 +636,7 @@
 
         .tab:hover {
             color: var(--primary);
-            background: rgba(37, 99, 235, 0.05);
+            background: rgba(191, 13, 35, 0.05);
         }
 
         .tab-content {
@@ -813,98 +814,6 @@
             <h1>🏥 Hospital del Móvil</h1>
             <div class="subtitle">Sistema Profesional de Cotización de Refacciones v3.0</div>
             <div class="version-badge">💎 VERSIÓN COMPLETA CON COMUNICACIÓN BIDIRECCIONAL</div>
-        </div>
-
-        <!-- Carga de Datos desde Google Sheets -->
-        <div class="api-config" style="text-align: center;">
-            <h3 style="justify-content: center;">📊 Cargar Datos desde Google Sheets</h3>
-            <button
-                onclick="cargarUltimaBusqueda()"
-                style="padding: 15px 30px; font-size: 16px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; border-radius: 12px; cursor: pointer; font-weight: 600; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3); transition: all 0.3s ease;"
-                onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(16, 185, 129, 0.4)'"
-                onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(16, 185, 129, 0.3)'">
-                📥 Cargar Última Búsqueda
-            </button>
-            <div class="help-text">
-                💡 <strong>Tip:</strong> Haz click para cargar automáticamente los datos de tu última búsqueda en Google Sheets.
-                O usa la URL con parámetro ?id=COT-XXX para cargar una búsqueda específica.
-            </div>
-        </div>
-
-        <!-- Formulario de búsqueda -->
-        <div class="box">
-            <div class="box-header">
-                <h2 class="box-title">🔍 Búsqueda de Refacciones</h2>
-            </div>
-
-            <form id="searchForm" class="form-grid">
-                <div class="form-group">
-                    <label>Tipo de Dispositivo</label>
-                    <select id="deviceType" required>
-                        <option value="">Seleccionar...</option>
-                        <option value="smartphone">📱 Smartphone</option>
-                        <option value="tablet">📱 Tablet</option>
-                        <option value="laptop">💻 Laptop</option>
-                        <option value="smartwatch">⌚ Smartwatch</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label>Marca</label>
-                    <select id="brand" required>
-                        <option value="">Seleccionar...</option>
-                        <option value="apple">🍎 Apple</option>
-                        <option value="samsung">📱 Samsung</option>
-                        <option value="huawei">📱 Huawei</option>
-                        <option value="xiaomi">📱 Xiaomi</option>
-                        <option value="motorola">📱 Motorola</option>
-                        <option value="lg">📱 LG</option>
-                        <option value="oneplus">📱 OnePlus</option>
-                        <option value="google">📱 Google Pixel</option>
-                        <option value="oppo">📱 Oppo</option>
-                        <option value="vivo">📱 Vivo</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label>Modelo</label>
-                    <input type="text" id="model" placeholder="Ej: iPhone 13, Galaxy S21" required>
-                </div>
-
-                <div class="form-group">
-                    <label>Tipo de Pieza</label>
-                    <select id="partType" required>
-                        <option value="">Seleccionar...</option>
-                        <option value="pantalla">🖥️ Pantalla/Display</option>
-                        <option value="bateria">🔋 Batería</option>
-                        <option value="camara">📷 Cámara</option>
-                        <option value="placa">🔌 Placa Madre</option>
-                        <option value="flex">🔗 Flex/Conector</option>
-                        <option value="bocina">🔊 Bocina/Auricular</option>
-                        <option value="microfono">🎤 Micrófono</option>
-                        <option value="boton">⏺️ Botón Power/Volumen</option>
-                        <option value="carcasa">📦 Carcasa/Tapa</option>
-                        <option value="cristal">🪟 Cristal Trasero</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label>Variante (Opcional)</label>
-                    <input type="text" id="variant" placeholder="Ej: OLED, LCD, Original">
-                </div>
-            </form>
-
-            <div style="margin-top: 25px; display: flex; gap: 15px; flex-wrap: wrap;">
-                <button class="btn btn-primary" onclick="buscarRefacciones()">
-                    🔍 Buscar Refacciones
-                </button>
-                <button class="btn btn-success" onclick="buscarDispositivosCompletos()">
-                    📱 Buscar Dispositivos Completos
-                </button>
-                <button class="btn btn-warning" onclick="limpiarFormulario()">
-                    🗑️ Limpiar
-                </button>
-            </div>
         </div>
 
         <!-- Estadísticas -->
@@ -1277,6 +1186,7 @@
                 <button class="btn btn-success" onclick="exportarCotizacionHTML()">
                     📄 Exportar HTML
                 </button>
+                <button class="btn btn-secondary" style="background:linear-gradient(135deg,#374151,#111827)" onclick="exportarCotizacionJPG()">🖼 Exportar JPG</button>
                 <button class="btn btn-warning" onclick="exportarCotizacionPDF()">
                     📄 Exportar PDF
                 </button>
@@ -1442,11 +1352,25 @@
                 const busqueda = data.busqueda;
                 const hallazgos = data.hallazgos;
 
-                // Procesar datos
-                todosLosResultados = hallazgos.piezas || [];
+                // Procesar datos (con normalización)
+                const normH = (h, i) => ({
+                    id: `${h.id_busqueda || 'HDM'}-${i}`,
+                    producto: h.titulo || h.title || h.producto || 'Sin título',
+                    plataforma: (h.plataforma || 'google_shopping').toLowerCase().replace(/[\s\/]+/g, '_'),
+                    condicion: h.tipo === 'Equipo Nuevo' ? 'new' : 'used',
+                    precio: parseFloat(h.precio) || 0,
+                    valoracion: h.calificacion != null ? String(h.calificacion) : 'N/A',
+                    envio: h.envio || 'No especificado',
+                    tiempoEnvio: h.tiempo_entrega || h.tiempoEnvio || 'N/A',
+                    url: h.url || h.url_compra || '#',
+                    imagen: h.imagen || 'https://via.placeholder.com/50x50.png?text=HDM',
+                    vendedor: h.vendedor || h.plataforma || 'N/A',
+                    stock: h.stock || 'N/A'
+                });
+                todosLosResultados = (hallazgos.piezas || []).map(normH);
                 dispositivosCompletos = {
-                    nuevos: hallazgos.equipos_nuevos || [],
-                    usados: hallazgos.equipos_usados || []
+                    nuevos: (hallazgos.equipos_nuevos || []).map(normH),
+                    usados: (hallazgos.equipos_usados || []).map(normH)
                 };
 
                 if (todosLosResultados.length === 0) {
@@ -1819,8 +1743,8 @@
                     datasets: [{
                         label: 'Precio Promedio',
                         data: promedios,
-                        backgroundColor: labels.map(l => colores[l] || '#2563eb'),
-                        borderColor: labels.map(l => colores[l] || '#1d4ed8'),
+                        backgroundColor: labels.map(l => colores[l] || '#bf0d23'),
+                        borderColor: labels.map(l => colores[l] || '#8c0c1c'),
                         borderWidth: 2,
                         borderRadius: 8
                     }]
@@ -2204,17 +2128,17 @@
         }
         .header {
             text-align: center;
-            border-bottom: 4px solid #2563eb;
+            border-bottom: 4px solid #bf0d23;
             padding-bottom: 20px;
             margin-bottom: 30px;
         }
         .header h1 {
-            color: #2563eb;
+            color: #bf0d23;
             font-size: 32px;
             margin-bottom: 10px;
         }
         .folio {
-            background: #2563eb;
+            background: #bf0d23;
             color: white;
             padding: 10px 20px;
             border-radius: 5px;
@@ -2228,10 +2152,10 @@
         .section-title {
             background: #f0f9ff;
             padding: 12px 20px;
-            border-left: 5px solid #2563eb;
+            border-left: 5px solid #bf0d23;
             font-size: 18px;
             font-weight: bold;
-            color: #1e40af;
+            color: #7d0d1a;
             margin-bottom: 15px;
         }
         .info-grid {
@@ -2254,7 +2178,7 @@
             margin-bottom: 5px;
         }
         .info-value {
-            color: #1e293b;
+            color: #1f2937;
             font-size: 16px;
         }
         .price-highlight {
@@ -2296,7 +2220,7 @@
             margin-bottom: 25px;
         }
         .variante-header {
-            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            background: linear-gradient(135deg, #bf0d23 0%, #8c0c1c 100%);
             color: white;
             padding: 15px 20px;
             border-radius: 8px 8px 0 0;
@@ -2305,15 +2229,15 @@
             font-weight: bold;
         }
         .comunicacion-section {
-            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
-            border: 3px solid #2563eb;
+            background: linear-gradient(135deg, #fff5f6 0%, #ffe4e8 100%);
+            border: 3px solid #bf0d23;
             border-radius: 12px;
             padding: 30px;
             margin: 30px 0;
             text-align: center;
         }
         .comunicacion-section h3 {
-            color: #1e40af;
+            color: #7d0d1a;
             margin-bottom: 20px;
             font-size: 22px;
         }
@@ -2346,7 +2270,7 @@
             color: white;
         }
         .btn-primary {
-            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            background: linear-gradient(135deg, #bf0d23 0%, #8c0c1c 100%);
             color: white;
         }
         .btn:hover {
@@ -2357,7 +2281,7 @@
             background: white;
             padding: 25px;
             border-radius: 8px;
-            border: 2px solid #2563eb;
+            border: 2px solid #bf0d23;
             margin-top: 20px;
         }
         .form-group {
@@ -2367,7 +2291,7 @@
             display: block;
             margin-bottom: 5px;
             font-weight: bold;
-            color: #1e40af;
+            color: #7d0d1a;
         }
         .form-group input,
         .form-group textarea {
@@ -2521,7 +2445,7 @@
             html += `
         <div class="comunicacion-section">
             <h3>💬 ¿Tienes preguntas o quieres aceptar esta cotización?</h3>
-            <p style="color: #1e40af; margin-bottom: 20px; font-size: 16px;">
+            <p style="color: #7d0d1a; margin-bottom: 20px; font-size: 16px;">
                 Comunícate con nosotros de inmediato:
             </p>
 
@@ -2543,7 +2467,7 @@
             </p>
 
             <div class="formulario-respuesta">
-                <h4 style="color: #1e40af; margin-bottom: 15px;">📝 O déjanos tu mensaje aquí:</h4>
+                <h4 style="color: #7d0d1a; margin-bottom: 15px;">📝 O déjanos tu mensaje aquí:</h4>
                 <form id="responseForm">
                     <div class="form-group">
                         <label>Nombre Completo *</label>
@@ -2578,7 +2502,7 @@
         </div>
 
         <div class="footer">
-            <h3 style="color: #2563eb; margin-bottom: 10px;">Hospital del Móvil</h3>
+            <h3 style="color: #bf0d23; margin-bottom: 10px;">Hospital del Móvil</h3>
             <p>🏥 Especialistas en Reparación de Dispositivos Móviles</p>
             <p>📱 WhatsApp: ${whatsappNumber} | 📧 Email: contacto@hospitaldelmovil.com</p>
             <p style="margin-top: 15px; font-size: 12px;">
@@ -2665,13 +2589,128 @@
         }
 
         function exportarCotizacionPDF() {
-            mostrarNotificacion('ℹ️ Usa Ctrl+P o ⌘+P para guardar como PDF', 'warning');
-            setTimeout(() => window.print(), 500);
+            // Build HTML and use html2pdf for real PDF download
+            const variantes = [];
+            for (let i = 1; i <= 4; i++) {
+                const clientName = document.getElementById(`clientName${i}`).value;
+                if (clientName) {
+                    variantes.push({
+                        numero: i,
+                        clienteNombre: clientName,
+                        clienteTelefono: document.getElementById(`clientPhone${i}`).value,
+                        clienteEmail: document.getElementById(`clientEmail${i}`).value,
+                        tipoVariante: document.getElementById(`variantType${i}`).value,
+                        precioVenta: parseFloat(document.getElementById(`salePrice${i}`).value) || 0,
+                        tiempoEntrega: document.getElementById(`deliveryTime${i}`).value,
+                        garantia: document.getElementById(`warranty${i}`).value,
+                        notas: document.getElementById(`notes${i}`).value
+                    });
+                }
+            }
+            if (variantes.length === 0) {
+                mostrarNotificacion('⚠️ Completa al menos una variante', 'warning');
+                return;
+            }
+            const folio = generarFolio();
+            const fecha = new Date().toLocaleDateString('es-MX');
+            // Build a print-friendly div
+            const wrap = document.createElement('div');
+            wrap.style.cssText = 'font-family:Arial,sans-serif;max-width:760px;margin:0 auto;padding:32px;color:#1f2937';
+            wrap.innerHTML = `
+                <div style="text-align:center;border-bottom:4px solid #bf0d23;padding-bottom:20px;margin-bottom:28px">
+                    <h1 style="color:#bf0d23;font-size:28px;margin-bottom:6px">🏥 Hospital del Móvil</h1>
+                    <p style="color:#6b7280">Cotización Profesional</p>
+                    <span style="background:#bf0d23;color:#fff;padding:6px 18px;border-radius:20px;font-size:13px;font-weight:700;display:inline-block;margin-top:10px">FOLIO: ${folio}</span>
+                    <p style="margin-top:8px;color:#6b7280;font-size:13px">Fecha: ${fecha}</p>
+                </div>
+                ${variantes.map(v => `
+                <div style="border:2px solid #e5e7eb;border-radius:10px;padding:24px;margin-bottom:24px">
+                    <div style="background:linear-gradient(135deg,#8c0c1c,#bf0d23);color:#fff;padding:12px 18px;border-radius:8px;margin:-24px -24px 20px;font-weight:700">${{premium:'🌟 Premium - Original OEM',high:'⭐ Alta Calidad - AAA',standard:'✅ Estándar - Compatible',economic:'💰 Económica'}[v.tipoVariante] || v.tipoVariante}</div>
+                    <p><strong>Cliente:</strong> ${v.clienteNombre}</p>
+                    <p><strong>Teléfono:</strong> ${v.clienteTelefono || '—'}</p>
+                    <p><strong>Entrega:</strong> ${v.tiempoEntrega || '—'}</p>
+                    <p><strong>Garantía:</strong> ${v.garantia || '—'}</p>
+                    <div style="background:#bf0d23;color:#fff;border-radius:8px;padding:16px;margin:16px 0;text-align:center;font-size:22px;font-weight:800">$${v.precioVenta.toFixed(2)} MXN</div>
+                    ${v.notas ? `<p><strong>Notas:</strong> ${v.notas}</p>` : ''}
+                </div>`).join('')}
+                <p style="text-align:center;color:#9ca3af;font-size:12px;margin-top:20px">Hospital del Móvil · Cotización válida 7 días · ${folio}</p>
+            `;
+            mostrarNotificacion('⏳ Generando PDF…', 'success');
+            html2pdf().set({
+                margin: [10, 10],
+                filename: `Cotizacion_${folio}.pdf`,
+                image: { type: 'jpeg', quality: 0.95 },
+                html2canvas: { scale: 2, useCORS: true },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            }).from(wrap).save()
+              .then(() => mostrarNotificacion('✅ PDF descargado', 'success'))
+              .catch(e => mostrarNotificacion('❌ Error PDF: ' + e.message, 'error'));
         }
 
         // ============================================
         // UTILIDADES
         // ============================================
+        async function exportarCotizacionJPG() {
+            const variantes = [];
+            for (let i = 1; i <= 4; i++) {
+                const clientName = document.getElementById(`clientName${i}`).value;
+                if (clientName) {
+                    variantes.push({
+                        clienteNombre: clientName,
+                        tipoVariante: document.getElementById(`variantType${i}`).value,
+                        precioVenta: parseFloat(document.getElementById(`salePrice${i}`).value) || 0,
+                        tiempoEntrega: document.getElementById(`deliveryTime${i}`).value,
+                        garantia: document.getElementById(`warranty${i}`).value
+                    });
+                }
+            }
+            if (variantes.length === 0) {
+                mostrarNotificacion('⚠️ Completa al menos una variante', 'warning');
+                return;
+            }
+            const folio = generarFolio();
+            const fecha = new Date().toLocaleDateString('es-MX');
+            const iframe = document.createElement('iframe');
+            iframe.style.cssText = 'position:fixed;left:-9999px;width:800px;height:1px;border:none;visibility:hidden';
+            document.body.appendChild(iframe);
+            const iDoc = iframe.contentDocument;
+            iDoc.open();
+            iDoc.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
+            <style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:Arial,sans-serif;background:#f5f5f5;padding:30px}
+            .wrap{max-width:760px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.15)}
+            .hd{background:linear-gradient(135deg,#8c0c1c,#bf0d23);color:#fff;padding:30px 36px}
+            .hd h1{font-size:26px;font-weight:800}.hd p{opacity:.85;font-size:.88rem;margin-top:4px}
+            .folio{background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);display:inline-block;padding:4px 14px;border-radius:20px;font-size:.78rem;font-weight:700;margin-top:10px}
+            .body{padding:28px 36px}
+            .vc{border:2px solid #e5e7eb;border-radius:10px;padding:20px;margin-bottom:18px}
+            .vh{background:linear-gradient(135deg,#8c0c1c,#bf0d23);color:#fff;padding:10px 16px;border-radius:6px;margin:-20px -20px 16px;font-size:.88rem;font-weight:700}
+            .pb{background:#bf0d23;color:#fff;border-radius:8px;padding:14px;text-align:center;font-size:1.5rem;font-weight:800;margin:12px 0}
+            .footer{background:#f9fafb;padding:16px 36px;font-size:.72rem;color:#9ca3af;text-align:center;border-top:1px solid #f3f4f6}
+            </style></head><body>
+            <div class="wrap">
+            <div class="hd"><h1>🏥 Hospital del Móvil</h1><p>Cotización Profesional</p>
+            <div class="folio">FOLIO: ${folio} &nbsp;·&nbsp; ${fecha}</div></div>
+            <div class="body">
+            ${variantes.map(v => `<div class="vc"><div class="vh">${{premium:'🌟 Premium OEM',high:'⭐ Alta Calidad AAA',standard:'✅ Estándar',economic:'💰 Económica'}[v.tipoVariante]||v.tipoVariante}</div>
+            <p><strong>Cliente:</strong> ${v.clienteNombre}</p>
+            <p><strong>Entrega:</strong> ${v.tiempoEntrega||'—'} &nbsp; <strong>Garantía:</strong> ${v.garantia||'—'}</p>
+            <div class="pb">$${v.precioVenta.toFixed(2)} MXN</div></div>`).join('')}
+            </div>
+            <div class="footer">Hospital del Móvil · Cotización válida 7 días · ${folio}</div>
+            </div></body></html>`);
+            iDoc.close();
+            await new Promise(r => setTimeout(r, 700));
+            try {
+                const canvas = await html2canvas(iDoc.body, { scale: 2, useCORS: true, backgroundColor: '#f5f5f5', width: 800, windowWidth: 800 });
+                const a = document.createElement('a');
+                a.href = canvas.toDataURL('image/jpeg', 0.93);
+                a.download = `Cotizacion_${folio}.jpg`;
+                a.click();
+                mostrarNotificacion('✅ Imagen JPG descargada', 'success');
+            } catch(e) { mostrarNotificacion('❌ Error JPG: ' + e.message, 'error'); }
+            finally { document.body.removeChild(iframe); }
+        }
+
         function generarFolio() {
             const fecha = new Date();
             const año = fecha.getFullYear();

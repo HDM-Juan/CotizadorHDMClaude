@@ -521,14 +521,23 @@ app.post('/api/buscar-serpapi', async (req, res) => {
         console.log(`   Query nuevo:  "${queryNuevo}"`);
         console.log(`   Query usado:  "${queryUsado}"`);
 
-        // Buscar en paralelo
-        const [piezas, equiposNuevos, equiposUsados] = await Promise.all([
+        // Buscar en paralelo — incluyendo AliExpress como query separado
+        const queryAliExpress = `${queryPieza} aliexpress`;
+        const [piezasGoogle, aliExpressItems, equiposNuevos, equiposUsados] = await Promise.all([
             buscarConSerpAPI(queryPieza, 20),
+            buscarConSerpAPI(queryAliExpress, 10),
             buscarConSerpAPI(queryNuevo, 10),
             buscarConSerpAPI(queryUsado, 10)
         ]);
 
-        console.log(`✅ Piezas: ${piezas.length} | Nuevos: ${equiposNuevos.length} | Usados: ${equiposUsados.length}`);
+        // Etiquetar resultados de AliExpress y fusionar con piezas generales
+        const aliTagged = aliExpressItems.map(item => ({
+            ...item,
+            plataforma: 'aliexpress'
+        }));
+        const piezas = [...piezasGoogle, ...aliTagged];
+
+        console.log(`✅ Piezas Google: ${piezasGoogle.length} | AliExpress: ${aliTagged.length} | Nuevos: ${equiposNuevos.length} | Usados: ${equiposUsados.length}`);
 
         res.json({
             success: true,
